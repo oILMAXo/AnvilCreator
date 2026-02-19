@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<!--
+    Anvil Creator — Vintage Story Smithing & Clay Forming Recipe Editor
+    Author: Claude (Anthropic) — AI-generated application
+    Created for: ilmax
+    Version: 1.0
+-->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="author" content="Claude (Anthropic)">
+<title>Anvil Creator — VS Recipe Editor</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===== THEME VARIABLES ===== */
+:root {
+    /* UI scale factor — updated by JS on resize */
+    --ui-scale: 1;
+
+    /* Blue theme (default) */
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-tertiary: #0f3460;
+    --bg-input: #1a1a2e;
+    --bg-grid: #111;
+    --bg-cell-empty: #1a1a2e;
+    --bg-preview: #0a0a15;
+    --text-primary: #e0e0e0;
+    --text-secondary: #ccc;
+    --text-muted: #888;
+    --text-dim: #555;
+    --text-axis: #444;
+    --accent: #e94560;
+    --accent2: #53a8b6;
+    --border: #333;
+    --border-cell: #2a2a3e;
+    --toolbar-bg: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+    --metal-top: #d0d0d0;
+    --metal-mid: #a0a0a0;
+    --metal-bot: #909090;
+    --metal-fill: #c0c0c0;
+    --metal-border: #888;
+    --toast-bg: #0f3460;
+}
+[data-theme="dark"] {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2a2a2a;
+    --bg-input: #181818;
+    --bg-grid: #0a0a0a;
+    --bg-cell-empty: #1a1a1a;
+    --bg-preview: #080808;
+    --text-primary: #e0e0e0;
+    --text-secondary: #bbb;
+    --text-muted: #777;
+    --text-dim: #555;
+    --text-axis: #444;
+    --accent: #e94560;
+    --accent2: #4db6ac;
+    --border: #383838;
+    --border-cell: #2a2a2a;
+    --toolbar-bg: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    --metal-top: #d0d0d0;
+    --metal-mid: #a0a0a0;
+    --metal-bot: #909090;
+    --metal-fill: #c0c0c0;
+    --metal-border: #888;
+    --toast-bg: #2a2a2a;
+}
+[data-theme="light"] {
+    --bg-primary: #f0f0f5;
+    --bg-secondary: #e0e0ea;
+    --bg-tertiary: #d0d0dd;
+    --bg-input: #fff;
+    --bg-grid: #ddd;
+    --bg-cell-empty: #eee;
+    --bg-preview: #d8d8e0;
+    --text-primary: #222;
+    --text-secondary: #444;
+    --text-muted: #777;
+    --text-dim: #aaa;
+    --text-axis: #999;
+    --accent: #d63050;
+    --accent2: #2a8a9a;
+    --border: #bbb;
+    --border-cell: #ccc;
+    --toolbar-bg: linear-gradient(135deg, #c8c8d8 0%, #b0b0c8 100%);
+    --metal-top: #a0a0a0;
+    --metal-mid: #808080;
+    --metal-bot: #707070;
+    --metal-fill: #909090;
+    --metal-border: #666;
+    --toast-bg: #d0d0dd;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    overflow: hidden;
+}
+
+/* ===== TOOLBAR ===== */
+.toolbar {
+    background: var(--toolbar-bg);
+    padding: calc(4px * var(--ui-scale)) calc(10px * var(--ui-scale));
+    display: flex;
+    align-items: center;
+    gap: calc(6px * var(--ui-scale));
+    border-bottom: 2px solid var(--accent);
+    min-height: calc(36px * var(--ui-scale));
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+.toolbar .app-title {
+    font-size: calc(15px * var(--ui-scale)); color: var(--accent); font-weight: bold; margin-right: calc(4px * var(--ui-scale)); white-space: nowrap;
+}
+.toolbar-sep { width: 1px; height: calc(24px * var(--ui-scale)); background: var(--border); margin: 0 calc(3px * var(--ui-scale)); }
+.tb-btn {
+    padding: calc(3px * var(--ui-scale)) calc(10px * var(--ui-scale)); border: 1px solid var(--border); border-radius: calc(3px * var(--ui-scale));
+    background: var(--bg-tertiary); color: var(--text-secondary); cursor: pointer; font-size: calc(12px * var(--ui-scale));
+    white-space: nowrap; transition: all 0.12s;
+}
+.tb-btn:hover { border-color: var(--accent2); background: var(--bg-secondary); color: var(--text-primary); }
+.tb-btn.danger:hover { border-color: var(--accent); background: var(--accent); color: #fff; }
+.toolbar .spacer { flex: 1; }
+.author-tag {
+    font-size: calc(9px * var(--ui-scale)); color: var(--text-dim); white-space: nowrap;
+    font-style: italic; opacity: 0.6; cursor: default;
+}
+.toolbar .recipe-field { display: flex; align-items: center; gap: 3px; }
+.toolbar .recipe-field label { font-size: calc(10px * var(--ui-scale)); color: var(--text-muted); text-transform: uppercase; }
+.toolbar .recipe-field input {
+    padding: calc(2px * var(--ui-scale)) calc(6px * var(--ui-scale)); background: var(--bg-input); border: 1px solid var(--border); border-radius: calc(3px * var(--ui-scale));
+    color: var(--text-primary); font-size: calc(12px * var(--ui-scale)); outline: none; width: calc(130px * var(--ui-scale));
+}
+.toolbar .recipe-field input:focus { border-color: var(--accent); }
+.toolbar .recipe-field input.short { width: calc(48px * var(--ui-scale)); text-align: center; }
+
+/* Selectors */
+.toolbar-select {
+    padding: calc(2px * var(--ui-scale)) calc(6px * var(--ui-scale)); background: var(--bg-input); border: 1px solid var(--border); border-radius: calc(3px * var(--ui-scale));
+    color: var(--text-secondary); font-size: calc(12px * var(--ui-scale)); cursor: pointer; outline: none;
+}
+.toolbar-select:hover { border-color: var(--accent2); }
+
+/* ===== MAIN ===== */
+.main-container { display: flex; flex: 1; overflow: hidden; }
+
+/* ===== LEFT PANEL ===== */
+.left-panel {
+    width: calc(170px * var(--ui-scale)); background: var(--bg-secondary); padding: calc(6px * var(--ui-scale));
+    display: flex; flex-direction: column; gap: calc(6px * var(--ui-scale));
+    border-right: 1px solid var(--border); overflow-y: auto; flex-shrink: 0;
+}
+.panel-section {
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: calc(6px * var(--ui-scale)); padding: calc(6px * var(--ui-scale));
+}
+.panel-section h3 {
+    font-size: calc(10px * var(--ui-scale)); color: var(--accent); margin-bottom: calc(5px * var(--ui-scale));
+    text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* Brush/eraser buttons */
+.brush-row { display: flex; gap: calc(3px * var(--ui-scale)); flex-wrap: nowrap; }
+
+.brush-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1; min-width: 0; height: calc(40px * var(--ui-scale)); border: 2px solid var(--border); border-radius: calc(5px * var(--ui-scale));
+    background: var(--bg-tertiary); color: var(--text-primary); cursor: pointer; font-size: calc(9px * var(--ui-scale));
+    transition: all 0.12s; gap: 1px;
+}
+.brush-btn:hover { border-color: var(--accent); }
+.brush-btn.active {
+    border-color: var(--accent); background: var(--accent); color: #fff;
+    box-shadow: 0 0 6px rgba(233,69,96,0.4);
+}
+.brush-btn.eraser.active {
+    border-color: var(--accent2); background: var(--accent2);
+    box-shadow: 0 0 6px rgba(83,168,182,0.4);
+}
+
+.brush-preview { display: inline-grid; gap: 1px; }
+.brush-preview-cell { width: 4px; height: 4px; background: rgba(255,255,255,0.7); border-radius: 1px; }
+
+.layer-actions { display: flex; gap: 2px; margin-top: 3px; }
+.layer-actions button {
+    flex: 1; padding: calc(5px * var(--ui-scale)) calc(3px * var(--ui-scale)); font-size: calc(9px * var(--ui-scale)); border: 1px solid var(--border); border-radius: calc(3px * var(--ui-scale));
+    background: var(--bg-tertiary); color: var(--text-secondary); cursor: pointer; transition: all 0.12s;
+    overflow: visible;
+}
+.layer-actions button:hover { border-color: var(--accent2); }
+
+/* Stats */
+.stats-row { display: flex; justify-content: space-between; font-size: calc(10px * var(--ui-scale)); padding: calc(2px * var(--ui-scale)) 0; }
+.stats-row .label { color: var(--text-muted); }
+.stats-row .value { color: var(--accent); font-weight: bold; }
+
+/* Shortcuts */
+.shortcuts { font-size: calc(13px * var(--ui-scale)); color: var(--text-dim); line-height: 1.6; }
+.shortcuts kbd {
+    background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 2px;
+    padding: 0 calc(4px * var(--ui-scale)); font-family: 'Consolas', monospace; font-size: calc(13px * var(--ui-scale)); color: var(--text-muted);
+}
+
+/* ===== CENTER ===== */
+.center-panel {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 8px; min-width: 0;
+}
+.grid-label { font-size: calc(11px * var(--ui-scale)); color: var(--text-muted); margin-bottom: calc(6px * var(--ui-scale)); }
+
+.grid-area {
+    display: flex; flex-direction: row; align-items: center;
+}
+
+.grid-wrapper { display: inline-block; }
+
+.grid-container {
+    display: inline-block; border: 2px solid var(--accent); border-radius: 3px;
+    background: var(--bg-grid); padding: 1px; box-shadow: 0 0 12px rgba(233,69,96,0.1);
+}
+.grid-row { display: flex; }
+.grid-cell {
+    width: var(--cell-size, calc(30px * var(--ui-scale))); height: var(--cell-size, calc(30px * var(--ui-scale))); border: 1px solid var(--border-cell); cursor: pointer;
+    transition: background 0.06s; position: relative;
+}
+.grid-cell.empty { background: var(--bg-cell-empty); }
+.grid-cell.filled { background: var(--metal-fill); border-color: var(--metal-border); }
+.grid-cell.filled::after {
+    content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
+    background: linear-gradient(135deg, var(--metal-top) 0%, var(--metal-mid) 50%, var(--metal-bot) 100%); border-radius: 1px;
+}
+/* Ghost overlays for adjacent layers */
+.grid-cell.ghost-above::before {
+    content: ''; position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
+    background: rgba(220, 60, 60, 0.22); border-radius: 1px; z-index: 1; pointer-events: none;
+}
+.grid-cell.ghost-below::before {
+    content: ''; position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
+    background: rgba(50, 120, 255, 0.22); border-radius: 1px; z-index: 1; pointer-events: none;
+}
+.grid-cell.ghost-both::before {
+    content: ''; position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
+    background: rgba(160, 80, 200, 0.22); border-radius: 1px; z-index: 1; pointer-events: none;
+}
+.grid-cell:hover { outline: 2px solid var(--accent); outline-offset: -2px; z-index: 3; }
+
+/* ===== MINI LAYER PREVIEWS ===== */
+.mini-previews {
+    display: flex; flex-direction: column; gap: 0px;
+    align-items: flex-end; justify-content: center;
+    flex-shrink: 0; margin-right: 8px;
+}
+.mini-preview-box {
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: calc(6px * var(--ui-scale));
+    padding: calc(4px * var(--ui-scale)); display: flex; flex-direction: column; align-items: center;
+    width: calc(140px * var(--ui-scale));
+}
+.mini-preview-box.above { border-color: rgba(220, 60, 60, 0.5); }
+.mini-preview-box.below { border-color: rgba(50, 120, 255, 0.5); }
+.mini-preview-label {
+    font-size: calc(9px * var(--ui-scale)); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: calc(3px * var(--ui-scale)); font-weight: bold;
+}
+.mini-preview-label.above { color: rgba(220, 80, 80, 0.9); }
+.mini-preview-label.below { color: rgba(80, 140, 255, 0.9); }
+.mini-preview-canvas {
+    width: calc(128px * var(--ui-scale)); height: calc(128px * var(--ui-scale)); border-radius: calc(3px * var(--ui-scale));
+    background: var(--bg-preview); display: block;
+    image-rendering: pixelated;
+}
+
+.axis-x-labels { display: flex; padding-left: calc(14px * var(--ui-scale)); margin-bottom: 1px; }
+.axis-x-labels span { width: var(--cell-size, calc(30px * var(--ui-scale))); text-align: center; font-size: calc(8px * var(--ui-scale)); color: var(--text-axis); }
+.grid-body { display: flex; }
+.y-labels { display: flex; flex-direction: column; }
+.y-labels span {
+    width: calc(14px * var(--ui-scale)); height: var(--cell-size, calc(30px * var(--ui-scale))); display: flex; align-items: center;
+    justify-content: center; font-size: calc(8px * var(--ui-scale)); color: var(--text-axis);
+}
+
+/* Mini-preview clickable */
+.mini-preview-box { cursor: pointer; transition: all 0.15s; }
+.mini-preview-box:hover { transform: scale(1.03); }
+.mini-preview-box.above:hover { border-color: rgba(220, 60, 60, 0.8); box-shadow: 0 0 8px rgba(220, 60, 60, 0.3); }
+.mini-preview-box.below:hover { border-color: rgba(50, 120, 255, 0.8); box-shadow: 0 0 8px rgba(50, 120, 255, 0.3); }
+.mini-preview-box.disabled { opacity: 0.35; cursor: default; transform: none; box-shadow: none; }
+
+/* ===== TOOLTIPS (Photoshop-style delayed) ===== */
+.tooltip-container {
+    position: fixed; background: #222; color: #eee; font-size: calc(11px * var(--ui-scale));
+    padding: calc(4px * var(--ui-scale)) calc(8px * var(--ui-scale)); border-radius: calc(4px * var(--ui-scale));
+    white-space: normal; max-width: min(300px, 80vw); word-wrap: break-word;
+    pointer-events: none; z-index: 9999; border: 1px solid #555;
+    opacity: 0; transition: opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.tooltip-container.visible { opacity: 1; }
+
+/* ===== RIGHT PANEL ===== */
+.right-panel {
+    width: calc(270px * var(--ui-scale)); background: var(--bg-secondary); padding: calc(6px * var(--ui-scale));
+    display: flex; flex-direction: column; gap: calc(6px * var(--ui-scale));
+    border-left: 1px solid var(--border); overflow-y: auto; flex-shrink: 0;
+}
+
+/* 3D Preview */
+.preview-3d-container {
+    background: var(--bg-preview); border: 1px solid var(--border); border-radius: calc(6px * var(--ui-scale));
+    position: relative; overflow: hidden; cursor: grab;
+    height: calc(260px * var(--ui-scale)); min-height: calc(200px * var(--ui-scale));
+}
+.preview-3d-container:active { cursor: grabbing; }
+.preview-3d-container canvas { width: 100%; height: 100%; display: block; }
+.preview-3d-hint {
+    position: absolute; bottom: calc(4px * var(--ui-scale)); right: calc(6px * var(--ui-scale));
+    font-size: calc(9px * var(--ui-scale)); color: var(--text-axis); pointer-events: none;
+}
+
+/* Mode selector */
+.mode-selector { display: flex; gap: 3px; }
+.mode-btn {
+    flex: 1; padding: calc(5px * var(--ui-scale)); font-size: calc(10px * var(--ui-scale)); text-align: center;
+    border: 1px solid var(--border); border-radius: calc(3px * var(--ui-scale)); background: var(--bg-tertiary);
+    color: var(--text-secondary); cursor: pointer; transition: all 0.12s;
+}
+.mode-btn:hover { border-color: var(--accent2); }
+.mode-btn.active { border-color: var(--accent2); background: var(--accent2); color: #fff; }
+
+/* JSON preview */
+.json-preview {
+    background: var(--bg-grid); border: 1px solid var(--border); border-radius: calc(4px * var(--ui-scale)); padding: calc(5px * var(--ui-scale));
+    font-family: 'Consolas', monospace; font-size: calc(10px * var(--ui-scale)); color: var(--text-muted);
+    max-height: calc(180px * var(--ui-scale)); overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+}
+
+/* Ghost legend */
+.ghost-legend { display: flex; flex-direction: column; gap: calc(3px * var(--ui-scale)); }
+.legend-row { display: flex; align-items: center; gap: calc(5px * var(--ui-scale)); font-size: calc(9px * var(--ui-scale)); color: var(--text-dim); }
+.legend-swatch {
+    width: calc(14px * var(--ui-scale)); height: calc(14px * var(--ui-scale));
+    border-radius: 2px; border: 1px solid var(--border); flex-shrink: 0;
+}
+.ghost-above-sw { background: rgba(220, 60, 60, 0.35); }
+.ghost-below-sw { background: rgba(50, 120, 255, 0.35); }
+.ghost-both-sw { background: rgba(160, 80, 200, 0.35); }
+.filled-sw { background: linear-gradient(135deg, var(--metal-top) 0%, var(--metal-mid) 50%, var(--metal-bot) 100%); }
+
+/* Craft result info */
+.craft-result-section { flex-shrink: 0; }
+.craft-result-info {
+    font-size: calc(10px * var(--ui-scale)); color: var(--text-secondary); line-height: 1.5;
+    word-break: break-all;
+}
+.craft-result-info .cr-label { color: var(--text-muted); }
+.craft-result-info .cr-value { color: var(--accent); font-weight: bold; }
+
+/* Overlays */
+.drop-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(233,69,96,0.15); border: 4px dashed var(--accent);
+    z-index: 1000; align-items: center; justify-content: center;
+    font-size: calc(18px * var(--ui-scale)); color: var(--accent); pointer-events: none;
+}
+.drop-overlay.visible { display: flex; }
+.toast {
+    position: fixed; bottom: 14px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--toast-bg); border: 1px solid var(--accent2);
+    color: var(--text-primary); padding: 10px 20px; border-radius: 6px;
+    font-size: calc(12px * var(--ui-scale)); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    transition: transform 0.25s ease; z-index: 2000;
+}
+.toast.visible { transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+    <span class="app-title">⚒ Anvil Creator</span>
+    <div class="toolbar-sep"></div>
+    <select class="toolbar-select" id="lang-select" onchange="setLang(this.value)">
+        <option value="ru">🇷🇺 RU</option>
+        <option value="en">🇬🇧 EN</option>
+    </select>
+    <select class="toolbar-select" id="theme-select" onchange="setTheme(this.value)">
+        <option value="blue" data-i18n-opt="themeBlue">🔵 Синяя</option>
+        <option value="dark" data-i18n-opt="themeDark">⚫ Тёмная</option>
+        <option value="light" data-i18n-opt="themeLight">⚪ Светлая</option>
+    </select>
+    <div class="toolbar-sep"></div>
+    <button class="tb-btn" onclick="saveProject()" data-i18n="save" data-tooltip-key="tipSave">💾 Сохранить</button>
+    <button class="tb-btn" onclick="loadProject()" data-i18n="load" data-tooltip-key="tipLoad">📂 Загрузить</button>
+    <button class="tb-btn" onclick="exportRecipe()" data-i18n="export" data-tooltip-key="tipExport">📤 Экспорт</button>
+    <button class="tb-btn danger" onclick="clearAll()" data-i18n="clearAll" data-tooltip-key="tipClear">🗑 Очистить</button>
+    <div class="toolbar-sep"></div>
+    <button class="tb-btn" onclick="undo()" data-i18n="undo" data-tooltip-key="tipUndo">↩</button>
+    <button class="tb-btn" onclick="redo()" data-i18n="redo" data-tooltip-key="tipRedo">↪</button>
+    <div class="toolbar-sep"></div>
+    <div class="recipe-field" data-tooltip-key="tipName">
+        <label data-i18n="lbl_name">Имя</label>
+        <input type="text" id="recipe-name" value="myitem">
+    </div>
+    <div class="recipe-field" data-tooltip-key="tipOutput">
+        <label data-i18n="lbl_output">Выход</label>
+        <input type="text" id="recipe-output" value="game:metalpart-{metal}">
+    </div>
+    <div class="recipe-field" data-tooltip-key="tipQty">
+        <label data-i18n="lbl_qty">Количество</label>
+        <input type="number" id="recipe-quantity" value="1" min="1" max="64" class="short">
+    </div>
+    <div class="spacer"></div>
+    <span class="author-tag" data-tooltip="Made by Claude (Anthropic AI) for ilmax">by Claude AI</span>
+</div>
+
+<!-- Main -->
+<div class="main-container">
+
+    <!-- Left panel -->
+    <div class="left-panel">
+        <!-- Brushes -->
+        <div class="panel-section">
+            <h3 data-i18n="brushes">Кисти</h3>
+            <div class="brush-row">
+                <button class="brush-btn active" id="brush-1" onclick="setBrush(1,'fill')" title="1×1">
+                    <div class="brush-preview" style="grid-template-columns:1fr;">
+                        <div class="brush-preview-cell"></div>
+                    </div>
+                    <span>1×1</span>
+                </button>
+                <button class="brush-btn" id="brush-2" onclick="setBrush(2,'fill')" title="2×2">
+                    <div class="brush-preview" style="grid-template-columns:repeat(2,1fr);">
+                        <div class="brush-preview-cell"></div><div class="brush-preview-cell"></div>
+                        <div class="brush-preview-cell"></div><div class="brush-preview-cell"></div>
+                    </div>
+                    <span>2×2</span>
+                </button>
+                <button class="brush-btn" id="brush-3" onclick="setBrush(3,'fill')" title="3×3">
+                    <div class="brush-preview" style="grid-template-columns:repeat(3,1fr);">
+                        <div class="brush-preview-cell"></div><div class="brush-preview-cell"></div><div class="brush-preview-cell"></div>
+                        <div class="brush-preview-cell"></div><div class="brush-preview-cell"></div><div class="brush-preview-cell"></div>
+                        <div class="brush-preview-cell"></div><div class="brush-preview-cell"></div><div class="brush-preview-cell"></div>
+                    </div>
+                    <span>3×3</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Erasers (separate section) -->
+        <div class="panel-section">
+            <h3 data-i18n="erasers">Резинка</h3>
+            <div class="brush-row">
+                <button class="brush-btn eraser" id="eraser-1" onclick="setBrush(1,'erase')" title="1×1">
+                    <span style="font-size:calc(11px * var(--ui-scale));color:var(--accent);">✕</span>
+                    <span>1×1</span>
+                </button>
+                <button class="brush-btn eraser" id="eraser-2" onclick="setBrush(2,'erase')" title="2×2">
+                    <span style="font-size:calc(10px * var(--ui-scale));color:var(--accent);">✕ 2</span>
+                    <span>2×2</span>
+                </button>
+                <button class="brush-btn eraser" id="eraser-9" onclick="setBrush(9,'erase')" title="9×9">
+                    <span style="font-size:calc(10px * var(--ui-scale));color:var(--accent);">✕ 9</span>
+                    <span>9×9</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Layer actions -->
+        <div class="panel-section">
+            <h3><span data-i18n="layers">Слои</span></h3>
+            <div class="layer-actions">
+                <button onclick="copyLayer()" data-i18n="copy" data-tooltip-key="tipCopy">📋</button>
+                <button onclick="pasteLayer()" data-i18n="paste" data-tooltip-key="tipPaste">📌</button>
+                <button onclick="clearLayer()" data-i18n="clearLayer" data-tooltip-key="tipClearLayer">🗑</button>
+                <button onclick="fillLayer()" data-i18n="fillLayer" data-tooltip-key="tipFillLayer">◼</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="panel-section">
+            <h3 data-i18n="stats">Статистика</h3>
+            <div class="stats-row"><span class="label" data-i18n="st_layer">Слой:</span><span class="value" id="layer-count">0</span></div>
+            <div class="stats-row"><span class="label" data-i18n="st_total">Всего:</span><span class="value" id="total-count">0</span></div>
+            <div class="stats-row"><span class="label" data-i18n="st_ingots">Слитков:</span><span class="value" id="ingot-count">0</span></div>
+            <div style="font-size:calc(8px * var(--ui-scale));color:var(--text-dim);text-align:center;margin-top:calc(2px * var(--ui-scale));" data-i18n="st_hint">1 слиток = 42 вокс.</div>
+        </div>
+
+        <!-- Shortcuts -->
+        <div class="panel-section">
+            <h3 data-i18n="hotkeys">Горячие клавиши</h3>
+            <div class="shortcuts">
+                <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> — <span data-i18n="hk_brush">кисть</span><br>
+                <kbd>E</kbd> — <span data-i18n="hk_eraser">резинка</span><br>
+                <kbd>W</kbd><kbd>S</kbd> — <span data-i18n="hk_layer">слой ↑/↓</span><br>
+                <kbd>Ctrl+S</kbd> — <span data-i18n="hk_save">сохранить</span><br>
+                <kbd>Ctrl+O</kbd> — <span data-i18n="hk_open">загрузить</span><br>
+                <kbd>Ctrl+E</kbd> — <span data-i18n="hk_export">экспорт</span><br>
+                <kbd>Ctrl+Z</kbd> — <span data-i18n="hk_undo">отменить</span><br>
+                <kbd>Ctrl+Y</kbd> — <span data-i18n="hk_redo">повторить</span><br>
+                <kbd>ПКМ</kbd> — <span data-i18n="hk_rmb">стирать</span><br>
+                <kbd>⚙</kbd> — <span data-i18n="hk_wheel">колёсико = слой</span>
+            </div>
+        </div>
+
+        <!-- Ghost legend -->
+        <div class="panel-section">
+            <h3 data-i18n="legend">Обозначения</h3>
+            <div class="ghost-legend">
+                <div class="legend-row"><span class="legend-swatch ghost-above-sw"></span><span data-i18n="leg_above">заполнено на слое выше</span></div>
+                <div class="legend-row"><span class="legend-swatch ghost-below-sw"></span><span data-i18n="leg_below">заполнено на слое ниже</span></div>
+                <div class="legend-row"><span class="legend-swatch ghost-both-sw"></span><span data-i18n="leg_both">заполнено выше и ниже</span></div>
+                <div class="legend-row"><span class="legend-swatch filled-sw"></span><span data-i18n="leg_filled">заполнено на текущем</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center — Grid with mini-previews -->
+    <div class="center-panel">
+        <div class="grid-label"><span data-i18n="layerLabel">Слой</span>: <span id="current-layer-label">1</span> / 16</div>
+        <div class="grid-area">
+            <!-- Mini layer previews (clickable = switch layer) -->
+            <div class="mini-previews">
+                <div class="mini-preview-box above" id="mini-above-box" onclick="navLayerUp()" data-tooltip="">
+                    <div class="mini-preview-label above" id="mini-above-label" data-i18n="navAbove">выше</div>
+                    <canvas class="mini-preview-canvas" id="mini-above" width="128" height="128"></canvas>
+                </div>
+                <div class="mini-preview-box below" id="mini-below-box" onclick="navLayerDown()" data-tooltip="">
+                    <div class="mini-preview-label below" id="mini-below-label" data-i18n="navBelow">ниже</div>
+                    <canvas class="mini-preview-canvas" id="mini-below" width="128" height="128"></canvas>
+                </div>
+            </div>
+            <!-- Grid -->
+            <div class="grid-wrapper">
+                <div class="axis-x-labels" id="axis-x"></div>
+                <div class="grid-body">
+                    <div class="y-labels" id="axis-y"></div>
+                    <div class="grid-container" id="grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+        <!-- 3D Preview -->
+        <div class="panel-section" style="padding:4px;">
+            <h3>3D <span data-i18n="preview">Превью</span></h3>
+            <div class="preview-3d-container" id="preview3d-container">
+                <canvas id="preview3d"></canvas>
+                <span class="preview-3d-hint" data-i18n="dragHint">ЛКМ — вращение</span>
+            </div>
+        </div>
+
+        <!-- Mode -->
+        <div class="panel-section">
+            <h3 data-i18n="recipeType">Тип рецепта</h3>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="mode-smithing" onclick="setRecipeMode('smithing')" data-i18n="smithing">Ковка</button>
+                <button class="mode-btn" id="mode-clay" onclick="setRecipeMode('clay')" data-i18n="clay">Глина</button>
+            </div>
+        </div>
+
+        <!-- JSON -->
+        <div class="panel-section" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+            <h3>JSON</h3>
+            <div class="json-preview" id="json-preview" style="flex:1;">{ }</div>
+        </div>
+
+        <!-- Craft result info -->
+        <div class="panel-section craft-result-section">
+            <h3 data-i18n="lbl_output_desc">Результат крафта</h3>
+            <div class="craft-result-info" id="craft-result-info"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlays -->
+<div class="drop-overlay" id="drop-overlay" data-i18n="dropHint">📂 Перетащите файл сюда</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="file-input-load" accept=".json,.anvil" style="display:none">
+
+<script>
+// ========== I18N ==========
+const I18N = {
+    ru: {
+        save: '💾 Сохранить', load: '📂 Загрузить', export: '📤 Экспорт', clearAll: '🗑 Очистить',
+        undo: '↩', redo: '↪',
+        lbl_name: 'Имя', lbl_output: 'Выход', lbl_qty: 'Количество',
+        brushes: 'Кисти', erasers: 'Резинка',
+        layers: 'Слои', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼',
+        stats: 'Статистика', st_layer: 'Слой:', st_total: 'Всего:', st_ingots: 'Слитков:',
+        st_hint: '1 слиток = 42 вокс.',
+        hotkeys: 'Горячие клавиши', hk_brush: 'кисть', hk_eraser: 'резинка',
+        hk_layer: 'слой ↑/↓', hk_save: 'сохранить', hk_open: 'загрузить',
+        hk_export: 'экспорт', hk_undo: 'отменить', hk_redo: 'повторить', hk_rmb: 'стирать',
+        hk_wheel: 'колёсико = слой',
+        legend: 'Обозначения', leg_above: 'заполнено на слое выше', leg_below: 'заполнено на слое ниже',
+        leg_both: 'заполнено выше и ниже', leg_filled: 'заполнено на текущем',
+        layerLabel: 'Слой', preview: 'Превью', dragHint: 'ЛКМ — вращение',
+        recipeType: 'Тип рецепта', smithing: 'Ковка', clay: 'Глина',
+        dropHint: '📂 Перетащите файл сюда',
+        toastSaved: 'Проект сохранён', toastLoaded: 'Проект загружен',
+        toastRecipeLoaded: 'Рецепт загружен', toastExported: 'Рецепт экспортирован',
+        toastUndo: 'Отмена', toastRedo: 'Повтор',
+        toastCopied: 'Слой скопирован', toastPasted: 'Слой вставлен',
+        toastCleared: 'Слой очищен', toastFilled: 'Слой заполнен',
+        toastAllCleared: 'Все слои очищены', toastNoPaste: 'Нечего вставлять',
+        toastBadFile: 'Неизвестный формат', confirmClear: 'Очистить все слои?',
+        emptyLabel: 'Пусто',
+        navAbove: 'выше', navBelow: 'ниже',
+        themeBlue: '🔵 Синяя', themeDark: '⚫ Тёмная', themeLight: '⚪ Светлая',
+        tipSave: 'Сохранить проект (Ctrl+S)', tipLoad: 'Загрузить проект (Ctrl+O)',
+        tipExport: 'Экспорт рецепта (Ctrl+E)', tipClear: 'Очистить все слои',
+        tipUndo: 'Отменить (Ctrl+Z)', tipRedo: 'Повторить (Ctrl+Y)',
+        tipCopy: 'Копировать слой', tipPaste: 'Вставить слой',
+        tipClearLayer: 'Очистить слой', tipFillLayer: 'Заполнить слой',
+        tipAbove: 'Перейти на слой выше (W)', tipBelow: 'Перейти на слой ниже (S)',
+        tipName: 'Внутреннее имя рецепта для файла',
+        tipOutput: 'Код предмета-результата крафта.\n{metal} — подставится тип металла',
+        tipQty: 'Количество предметов, которое игрок получит за один крафт по этому рецепту',
+        lbl_output_desc: 'Результат крафта'
+    },
+    en: {
+        save: '💾 Save', load: '📂 Load', export: '📤 Export', clearAll: '🗑 Clear',
+        undo: '↩', redo: '↪',
+        lbl_name: 'Name', lbl_output: 'Output', lbl_qty: 'Quantity',
+        brushes: 'Brushes', erasers: 'Eraser',
+        layers: 'Layers', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼',
+        stats: 'Statistics', st_layer: 'Layer:', st_total: 'Total:', st_ingots: 'Ingots:',
+        st_hint: '1 ingot = 42 voxels',
+        hotkeys: 'Hotkeys', hk_brush: 'brush', hk_eraser: 'eraser',
+        hk_layer: 'layer ↑/↓', hk_save: 'save', hk_open: 'load',
+        hk_export: 'export', hk_undo: 'undo', hk_redo: 'redo', hk_rmb: 'erase',
+        hk_wheel: 'scroll = layer',
+        legend: 'Legend', leg_above: 'filled on layer above', leg_below: 'filled on layer below',
+        leg_both: 'filled above and below', leg_filled: 'filled on current layer',
+        layerLabel: 'Layer', preview: 'Preview', dragHint: 'LMB — rotate',
+        recipeType: 'Recipe type', smithing: 'Smithing', clay: 'Clay',
+        dropHint: '📂 Drop file here',
+        toastSaved: 'Project saved', toastLoaded: 'Project loaded',
+        toastRecipeLoaded: 'Recipe loaded', toastExported: 'Recipe exported',
+        toastUndo: 'Undo', toastRedo: 'Redo',
+        toastCopied: 'Layer copied', toastPasted: 'Layer pasted',
+        toastCleared: 'Layer cleared', toastFilled: 'Layer filled',
+        toastAllCleared: 'All layers cleared', toastNoPaste: 'Nothing to paste',
+        toastBadFile: 'Unknown format', confirmClear: 'Clear all layers?',
+        emptyLabel: 'Empty',
+        navAbove: 'above', navBelow: 'below',
+        themeBlue: '🔵 Blue', themeDark: '⚫ Dark', themeLight: '⚪ Light',
+        tipSave: 'Save project (Ctrl+S)', tipLoad: 'Load project (Ctrl+O)',
+        tipExport: 'Export recipe (Ctrl+E)', tipClear: 'Clear all layers',
+        tipUndo: 'Undo (Ctrl+Z)', tipRedo: 'Redo (Ctrl+Y)',
+        tipCopy: 'Copy layer', tipPaste: 'Paste layer',
+        tipClearLayer: 'Clear layer', tipFillLayer: 'Fill layer',
+        tipAbove: 'Go to layer above (W)', tipBelow: 'Go to layer below (S)',
+        tipName: 'Internal recipe name for the file',
+        tipOutput: 'Item code for the crafting result.\n{metal} — substituted with metal type',
+        tipQty: 'Number of items the player receives per single craft with this recipe',
+        lbl_output_desc: 'Craft result'
+    }
+};
+
+let currentLang = 'ru';
+
+function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[lang][key] !== undefined) {
+            el.textContent = I18N[lang][key];
+        }
+    });
+    // Update <option> elements with data-i18n-opt
+    document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+        const key = el.getAttribute('data-i18n-opt');
+        if (I18N[lang][key] !== undefined) {
+            el.textContent = I18N[lang][key];
+        }
+    });
+    // Update tooltips
+    updateTooltipTexts();
+    updateNavButtons();
+    updateCraftResultInfo();
+}
+
+function t(key) { return I18N[currentLang][key] || key; }
+
+// ========== THEMES ==========
+function setTheme(theme) {
+    if (theme === 'blue') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+    render3D();
+}
+
+// ========== STATE ==========
+const GRID_W = 16;
+const GRID_H = 16;
+const LAYERS = 16;
+const VOXELS_PER_INGOT = 42;
+
+let currentLayer = 0;
+let brushSize = 1;
+let brushMode = 'fill';
+let isMouseDown = false;
+let mouseButton = 0;
+let recipeMode = 'smithing';
+
+let layers = [];
+for (let l = 0; l < LAYERS; l++) {
+    layers[l] = [];
+    for (let r = 0; r < GRID_H; r++)
+        layers[l][r] = new Array(GRID_W).fill(false);
+}
+
+let undoStack = [], redoStack = [], clipboardLayer = null;
+let hasUnsavedChanges = false;
+
+// 3D
+let rotX = -30, rotY = 45, isDragging3d = false, drag3dX, drag3dY;
+let canvas3d, ctx3d;
+
+// ========== UI SCALE ==========
+function updateUIScale() {
+    const sw = window.innerWidth / 1200;
+    const sh = window.innerHeight / 800;
+    const scale = Math.min(sw, sh);
+    document.documentElement.style.setProperty('--ui-scale', Math.max(0.6, scale).toFixed(4));
+    requestAnimationFrame(updateCellSize);
+}
+function updateCellSize() {
+    const center = document.querySelector('.center-panel');
+    if (!center) return;
+    const rect = center.getBoundingClientRect();
+    // available space minus label, axis labels, mini-previews, paddings
+    const uiScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')) || 1;
+    const miniW = 140 * uiScale + 8; // mini-preview width + margin
+    const axisW = 14 * uiScale; // y-labels width
+    const labelH = 30 * uiScale; // grid-label + axis-x heights
+    const availW = rect.width - miniW - axisW - 24; // paddings
+    const availH = rect.height - labelH - 24;
+    const maxCellW = Math.floor(availW / GRID_W);
+    const maxCellH = Math.floor(availH / GRID_H);
+    const cellSize = Math.max(12, Math.min(maxCellW, maxCellH));
+    document.documentElement.style.setProperty('--cell-size', cellSize + 'px');
+}
+
+// ========== INIT ==========
+function init() {
+    updateUIScale();
+    window.addEventListener('resize', updateUIScale);
+    buildGrid();
+    buildAxisLabels();
+    updateAll();
+    setupDragDrop();
+    setupKeyboard();
+    setupFileInputs();
+    setup3DPreview();
+    updateNavButtons();
+    initTooltips();
+}
+
+let _tipTimer = null;
+function initTooltips() {
+    // Create fixed tooltip element
+    const tip = document.createElement('div');
+    tip.id = 'tooltip-el';
+    tip.className = 'tooltip-container';
+    document.body.appendChild(tip);
+
+    // Update tooltip text from i18n keys
+    updateTooltipTexts();
+
+    // Event delegation for all tooltips
+    document.addEventListener('mouseover', function(e) {
+        const el = e.target.closest('[data-tooltip]');
+        if (!el) return;
+        const text = el.getAttribute('data-tooltip');
+        if (!text) return;
+        clearTimeout(_tipTimer);
+        _tipTimer = setTimeout(() => {
+            tip.textContent = text;
+            // Reset position for measurement
+            tip.style.left = '0px';
+            tip.style.top = '0px';
+            tip.style.transform = 'none';
+            tip.classList.add('visible');
+
+            const rect = el.getBoundingClientRect();
+            const tipRect = tip.getBoundingClientRect();
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            const margin = 6;
+
+            // Preferred: centered below the element
+            let left = rect.left + rect.width / 2 - tipRect.width / 2;
+            let top = rect.bottom + margin;
+
+            // Clamp horizontally
+            if (left < margin) left = margin;
+            if (left + tipRect.width > winW - margin) left = winW - margin - tipRect.width;
+
+            // If goes below window, show above element
+            if (top + tipRect.height > winH - margin) {
+                top = rect.top - tipRect.height - margin;
+            }
+            // Clamp vertically
+            if (top < margin) top = margin;
+
+            tip.style.left = left + 'px';
+            tip.style.top = top + 'px';
+        }, 600);
+    });
+    document.addEventListener('mouseout', function(e) {
+        const el = e.target.closest('[data-tooltip]');
+        if (!el) return;
+        clearTimeout(_tipTimer);
+        tip.classList.remove('visible');
+    });
+}
+
+function updateTooltipTexts() {
+    document.querySelectorAll('[data-tooltip-key]').forEach(el => {
+        const key = el.getAttribute('data-tooltip-key');
+        if (I18N[currentLang][key] !== undefined) {
+            el.setAttribute('data-tooltip', I18N[currentLang][key]);
+        }
+    });
+}
+
+// ========== BRUSHES ==========
+function setBrush(size, mode) {
+    brushSize = size;
+    brushMode = mode;
+    document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+    if (mode === 'fill') {
+        const el = document.getElementById('brush-' + size);
+        if (el) el.classList.add('active');
+    } else {
+        const el = document.getElementById('eraser-' + size);
+        if (el) el.classList.add('active');
+    }
+}
+
+// ========== GRID ==========
+function buildGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    for (let r = 0; r < GRID_H; r++) {
+        const row = document.createElement('div');
+        row.className = 'grid-row';
+        for (let c = 0; c < GRID_W; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell empty';
+            cell.dataset.row = r; cell.dataset.col = c;
+            cell.addEventListener('mousedown', onCellMouseDown);
+            cell.addEventListener('mouseenter', onCellMouseEnter);
+            cell.addEventListener('contextmenu', e => e.preventDefault());
+            row.appendChild(cell);
+        }
+        grid.appendChild(row);
+    }
+    document.addEventListener('mouseup', () => { isMouseDown = false; });
+}
+
+function buildAxisLabels() {
+    const xL = document.getElementById('axis-x'); xL.innerHTML = '';
+    for (let c = 0; c < GRID_W; c++) { const s = document.createElement('span'); s.textContent = c; xL.appendChild(s); }
+    const yL = document.getElementById('axis-y'); yL.innerHTML = '';
+    for (let r = 0; r < GRID_H; r++) { const s = document.createElement('span'); s.textContent = r; yL.appendChild(s); }
+}
+
+function onCellMouseDown(e) {
+    e.preventDefault(); isMouseDown = true; mouseButton = e.button;
+    saveUndo(); applyBrush(e.target);
+}
+function onCellMouseEnter(e) { if (isMouseDown) applyBrush(e.target); }
+
+function applyBrush(cell) {
+    const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
+    if (isNaN(r) || isNaN(c)) return;
+    const fill = (mouseButton === 2) ? false : (brushMode === 'fill');
+    const half = Math.floor(brushSize / 2);
+    for (let dr = -half; dr < brushSize - half; dr++)
+        for (let dc = -half; dc < brushSize - half; dc++) {
+            const nr = r+dr, nc = c+dc;
+            if (nr >= 0 && nr < GRID_H && nc >= 0 && nc < GRID_W)
+                layers[currentLayer][nr][nc] = fill;
+        }
+    refreshGrid(); updateStats(); updateJsonPreview(); render3D();
+}
+
+function refreshGrid() {
+    const hasAbove = currentLayer < LAYERS - 1;
+    const hasBelow = currentLayer > 0;
+    const aboveLayer = hasAbove ? layers[currentLayer + 1] : null;
+    const belowLayer = hasBelow ? layers[currentLayer - 1] : null;
+
+    const cells = document.getElementById('grid').querySelectorAll('.grid-cell');
+    cells.forEach(cell => {
+        const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
+        const filled = layers[currentLayer][r][c];
+        const above = aboveLayer && aboveLayer[r][c];
+        const below = belowLayer && belowLayer[r][c];
+
+        let cls = 'grid-cell ' + (filled ? 'filled' : 'empty');
+        if (!filled) {
+            if (above && below) cls += ' ghost-both';
+            else if (above) cls += ' ghost-above';
+            else if (below) cls += ' ghost-below';
+        }
+        cell.className = cls;
+    });
+    renderMiniPreviews();
+}
+
+// ========== LAYERS ==========
+function switchLayer(l) {
+    currentLayer = l;
+    document.getElementById('current-layer-label').textContent = l + 1;
+    refreshGrid(); updateStats(); updateNavButtons();
+}
+
+function navLayerUp() {
+    if (currentLayer < LAYERS - 1) switchLayer(currentLayer + 1);
+}
+function navLayerDown() {
+    if (currentLayer > 0) switchLayer(currentLayer - 1);
+}
+function updateNavButtons() {
+    const aboveBox = document.getElementById('mini-above-box');
+    const belowBox = document.getElementById('mini-below-box');
+    const aboveLabel = document.getElementById('mini-above-label');
+    const belowLabel = document.getElementById('mini-below-label');
+
+    if (currentLayer >= LAYERS - 1) {
+        aboveBox.classList.add('disabled');
+        aboveLabel.textContent = '—';
+        aboveBox.setAttribute('data-tooltip', '');
+    } else {
+        aboveBox.classList.remove('disabled');
+        aboveLabel.textContent = t('navAbove') + ' · ' + (currentLayer + 2);
+        aboveBox.setAttribute('data-tooltip', t('tipAbove'));
+    }
+
+    if (currentLayer <= 0) {
+        belowBox.classList.add('disabled');
+        belowLabel.textContent = '—';
+        belowBox.setAttribute('data-tooltip', '');
+    } else {
+        belowBox.classList.remove('disabled');
+        belowLabel.textContent = t('navBelow') + ' · ' + currentLayer;
+        belowBox.setAttribute('data-tooltip', t('tipBelow'));
+    }
+}
+
+function copyLayer() { clipboardLayer = layers[currentLayer].map(r=>[...r]); showToast(t('toastCopied')); }
+function pasteLayer() {
+    if (!clipboardLayer) { showToast(t('toastNoPaste'),true); return; }
+    saveUndo(); layers[currentLayer] = clipboardLayer.map(r=>[...r]);
+    refreshGrid(); updateAll(); showToast(t('toastPasted'));
+}
+function clearLayer() {
+    saveUndo(); for (let r=0;r<GRID_H;r++) layers[currentLayer][r].fill(false);
+    refreshGrid(); updateAll(); showToast(t('toastCleared'));
+}
+function fillLayer() {
+    saveUndo(); for (let r=0;r<GRID_H;r++) layers[currentLayer][r].fill(true);
+    refreshGrid(); updateAll(); showToast(t('toastFilled'));
+}
+function clearAll() {
+    if (!confirm(t('confirmClear'))) return;
+    saveUndo();
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) layers[l][r].fill(false);
+    refreshGrid(); updateAll(); showToast(t('toastAllCleared'));
+}
+
+// ========== RECIPE MODE ==========
+function setRecipeMode(m) {
+    recipeMode = m;
+    document.getElementById('mode-smithing').className = 'mode-btn'+(m==='smithing'?' active':'');
+    document.getElementById('mode-clay').className = 'mode-btn'+(m==='clay'?' active':'');
+    updateJsonPreview();
+    updateCraftResultInfo();
+}
+
+// ========== STATS ==========
+function updateStats() {
+    let lc=0, tc=0;
+    for (let r=0;r<GRID_H;r++) for (let c=0;c<GRID_W;c++) if (layers[currentLayer][r][c]) lc++;
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) for (let c=0;c<GRID_W;c++) if (layers[l][r][c]) tc++;
+    document.getElementById('layer-count').textContent = lc;
+    document.getElementById('total-count').textContent = tc;
+    const ing = Math.ceil(tc / VOXELS_PER_INGOT);
+    document.getElementById('ingot-count').textContent = tc === 0 ? '0' : ing;
+}
+
+// ========== JSON ==========
+function generateRecipeJson() {
+    const name = document.getElementById('recipe-name').value || 'myitem';
+    const output = document.getElementById('recipe-output').value || 'game:metalpart-{metal}';
+    const qty = parseInt(document.getElementById('recipe-quantity').value) || 1;
+
+    let usedLayers=[], minR=GRID_H, maxR=-1, minC=GRID_W, maxC=-1;
+    for (let l=0;l<LAYERS;l++) {
+        let has=false;
+        for (let r=0;r<GRID_H;r++) for (let c=0;c<GRID_W;c++) if (layers[l][r][c]) {
+            has=true; if(r<minR)minR=r; if(r>maxR)maxR=r; if(c<minC)minC=c; if(c>maxC)maxC=c;
+        }
+        if (has) usedLayers.push(l);
+    }
+
+    const ingr = recipeMode==='smithing'
+        ? {type:"item",code:"game:ingot-{metal}",name:"metal"}
+        : {type:"item",code:"game:clay-*",name:"clay"};
+
+    if (usedLayers.length===0)
+        return JSON.stringify({ingredient:ingr,name:name,pattern:[[]],output:{type:"item",code:output,quantity:qty}},null,'\t');
+
+    let pattern=[];
+    for (let l=usedLayers[0]; l<=usedLayers[usedLayers.length-1]; l++) {
+        let lp=[];
+        for (let r=minR;r<=maxR;r++) {
+            let rs='';
+            for (let c=minC;c<=maxC;c++) rs += layers[l][r][c] ? '#' : '_';
+            lp.push(rs);
+        }
+        pattern.push(lp);
+    }
+    return JSON.stringify({ingredient:ingr,name:name,pattern:pattern,output:{type:"item",code:output,quantity:qty}},null,'\t');
+}
+
+function updateJsonPreview() { document.getElementById('json-preview').textContent = generateRecipeJson(); }
+
+// ========== 3D PREVIEW ==========
+function setup3DPreview() {
+    canvas3d = document.getElementById('preview3d');
+    ctx3d = canvas3d.getContext('2d');
+    const ct = document.getElementById('preview3d-container');
+
+    function resize() {
+        const r = ct.getBoundingClientRect();
+        canvas3d.width = r.width; canvas3d.height = r.height;
+        render3D();
+    }
+    new ResizeObserver(resize).observe(ct);
+    setTimeout(resize, 50);
+
+    ct.addEventListener('mousedown', e => {
+        if (e.button===0) { isDragging3d=true; drag3dX=e.clientX; drag3dY=e.clientY; e.preventDefault(); }
+    });
+    document.addEventListener('mousemove', e => {
+        if (!isDragging3d) return;
+        rotY -= (e.clientX-drag3dX)*0.7; rotX += (e.clientY-drag3dY)*0.7;
+        rotX = Math.max(-89,Math.min(89,rotX));
+        drag3dX=e.clientX; drag3dY=e.clientY;
+        render3D();
+    });
+    document.addEventListener('mouseup', () => { isDragging3d=false; });
+}
+
+function render3D() {
+    if (!ctx3d || !canvas3d.width) return;
+    const W = canvas3d.width, H = canvas3d.height;
+    ctx3d.clearRect(0,0,W,H);
+
+    // Use theme-aware bg color
+    const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-preview').trim() || '#0a0a15';
+    ctx3d.fillStyle = bgColor; ctx3d.fillRect(0,0,W,H);
+
+    const radX = rotX*Math.PI/180, radY = rotY*Math.PI/180;
+    const cosY=Math.cos(radY), sinY=Math.sin(radY), cosX=Math.cos(radX), sinX=Math.sin(radX);
+
+    // Find bounds of actual voxels for centering
+    let minX=GRID_W,maxX=-1,minY=LAYERS,maxY=-1,minZ=GRID_H,maxZ=-1, hasAny=false;
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) for (let c=0;c<GRID_W;c++) {
+        if (layers[l][r][c]) {
+            hasAny=true;
+            if(c<minX)minX=c; if(c>maxX)maxX=c;
+            if(l<minY)minY=l; if(l>maxY)maxY=l;
+            if(r<minZ)minZ=r; if(r>maxZ)maxZ=r;
+        }
+    }
+
+    if (!hasAny) {
+        ctx3d.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#333';
+        ctx3d.font='12px Segoe UI'; ctx3d.textAlign='center';
+        ctx3d.fillText(t('emptyLabel'),W/2,H/2);
+        return;
+    }
+
+    const cxM=(minX+maxX+1)/2, cyM=(minY+maxY+1)/2, czM=(minZ+maxZ+1)/2;
+    const span = Math.max(maxX-minX+1, maxY-minY+1, maxZ-minZ+1, 1);
+    const scale = Math.min(W,H) / (span * 2.2);
+    const cx=W/2, cy=H/2;
+
+    function project(x,y,z) {
+        x-=cxM; y-=cyM; z-=czM;
+        const rx=x*cosY-z*sinY, rz=x*sinY+z*cosY;
+        const ry=y*cosX-rz*sinX, rz2=y*sinX+rz*cosX;
+        return {x:cx+rx*scale, y:cy-ry*scale, z:rz2};
+    }
+
+    let faces=[];
+    const colors = [
+        {t:'#b8b8b8',s:'#989898',f:'#a8a8a8'},
+        {t:'#a8c0d0',s:'#88a0b0',f:'#98b0c0'},
+        {t:'#c8b098',s:'#a89078',f:'#b8a088'},
+        {t:'#98c8b0',s:'#78a890',f:'#88b8a0'},
+        {t:'#c8b898',s:'#a89878',f:'#b8a888'},
+        {t:'#b898c8',s:'#9878a8',f:'#a888b8'},
+        {t:'#c8a8a8',s:'#a88888',f:'#b89898'},
+        {t:'#a8c8a8',s:'#88a888',f:'#98b898'},
+        {t:'#b0b0c8',s:'#9090a8',f:'#a0a0b8'},
+        {t:'#c8c0a8',s:'#a8a088',f:'#b8b098'},
+        {t:'#a8b8c8',s:'#8898a8',f:'#98a8b8'},
+        {t:'#c0a8b8',s:'#a08898',f:'#b098a8'},
+        {t:'#b8c8a8',s:'#98a888',f:'#a8b898'},
+        {t:'#a8a8c8',s:'#8888a8',f:'#9898b8'},
+        {t:'#c8a8c0',s:'#a888a0',f:'#b898b0'},
+        {t:'#b8b8a8',s:'#989888',f:'#a8a898'},
+    ];
+
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) for (let c=0;c<GRID_W;c++) {
+        if (!layers[l][r][c]) continue;
+        const x=c, y=l, z=r;
+        const col = colors[l%colors.length];
+
+        // Top
+        if (l===LAYERS-1 || !layers[l+1]?.[r]?.[c]) {
+            const p=[project(x,y+1,z),project(x+1,y+1,z),project(x+1,y+1,z+1),project(x,y+1,z+1)];
+            faces.push({p, c:col.t, z:(p[0].z+p[1].z+p[2].z+p[3].z)/4});
+        }
+        // Bottom
+        if (l===0 || !layers[l-1]?.[r]?.[c]) {
+            const p=[project(x,y,z+1),project(x+1,y,z+1),project(x+1,y,z),project(x,y,z)];
+            faces.push({p, c:'#686868', z:(p[0].z+p[1].z+p[2].z+p[3].z)/4});
+        }
+        // Front
+        if (r===GRID_H-1 || !layers[l][r+1]?.[c]) {
+            const p=[project(x,y,z+1),project(x+1,y,z+1),project(x+1,y+1,z+1),project(x,y+1,z+1)];
+            faces.push({p, c:col.f, z:(p[0].z+p[1].z+p[2].z+p[3].z)/4});
+        }
+        // Back
+        if (r===0 || !layers[l][r-1]?.[c]) {
+            const p=[project(x+1,y,z),project(x,y,z),project(x,y+1,z),project(x+1,y+1,z)];
+            faces.push({p, c:col.f, z:(p[0].z+p[1].z+p[2].z+p[3].z)/4});
+        }
+        // Right
+        if (c===GRID_W-1 || !layers[l][r][c+1]) {
+            const p=[project(x+1,y,z),project(x+1,y,z+1),project(x+1,y+1,z+1),project(x+1,y+1,z)];
+            faces.push({p, c:col.s, z:(p[0].z+p[1].z+p[2].z+p[3].z)/4});
+        }
+        // Left
+        if (c===0 || !layers[l][r][c-1]) {
+            const p=[project(x,y,z+1),project(x,y,z),project(x,y+1,z),project(x,y+1,z+1)];
+            faces.push({p, c:col.s, z:(p[0].z+p[1].z+p[2].z+p[3].z)/4});
+        }
+    }
+
+    faces.sort((a,b) => a.z-b.z);
+
+    for (const f of faces) {
+        ctx3d.beginPath();
+        ctx3d.moveTo(f.p[0].x, f.p[0].y);
+        for (let i=1;i<f.p.length;i++) ctx3d.lineTo(f.p[i].x, f.p[i].y);
+        ctx3d.closePath();
+        ctx3d.fillStyle = f.c; ctx3d.fill();
+        ctx3d.strokeStyle = 'rgba(0,0,0,0.25)'; ctx3d.lineWidth = 0.5; ctx3d.stroke();
+    }
+}
+
+// ========== MINI LAYER PREVIEWS ==========
+function renderMiniPreviews() {
+    renderMiniCanvas('mini-above', currentLayer < LAYERS - 1 ? layers[currentLayer + 1] : null, 'rgba(220, 60, 60, 0.85)', 'rgba(220, 60, 60, 0.15)');
+    renderMiniCanvas('mini-below', currentLayer > 0 ? layers[currentLayer - 1] : null, 'rgba(50, 120, 255, 0.85)', 'rgba(50, 120, 255, 0.15)');
+}
+
+function renderMiniCanvas(canvasId, layerData, fillColor, emptyHintColor) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-preview').trim() || '#0a0a15';
+
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, W, H);
+
+    if (!layerData) {
+        // No layer — show "—" text
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || '#555';
+        ctx.font = '16px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('—', W / 2, H / 2);
+        return;
+    }
+
+    const cellW = W / GRID_W;
+    const cellH = H / GRID_H;
+
+    // Draw grid lines
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-cell').trim() || '#2a2a3e';
+    ctx.lineWidth = 0.5;
+    for (let r = 0; r <= GRID_H; r++) {
+        ctx.beginPath(); ctx.moveTo(0, r * cellH); ctx.lineTo(W, r * cellH); ctx.stroke();
+    }
+    for (let c = 0; c <= GRID_W; c++) {
+        ctx.beginPath(); ctx.moveTo(c * cellW, 0); ctx.lineTo(c * cellW, H); ctx.stroke();
+    }
+
+    // Draw filled cells
+    for (let r = 0; r < GRID_H; r++) {
+        for (let c = 0; c < GRID_W; c++) {
+            if (layerData[r][c]) {
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(c * cellW + 0.5, r * cellH + 0.5, cellW - 1, cellH - 1);
+            }
+        }
+    }
+}
+
+// ========== UNDO/REDO ==========
+function markDirty() {
+    hasUnsavedChanges = true;
+    if (isPywebview()) pywebview.api.set_unsaved_state(true);
+}
+function markClean() {
+    hasUnsavedChanges = false;
+    if (isPywebview()) pywebview.api.set_unsaved_state(false);
+}
+
+function saveUndo() {
+    undoStack.push(JSON.parse(JSON.stringify(layers)));
+    if (undoStack.length>50) undoStack.shift();
+    redoStack=[];
+    markDirty();
+}
+function undo() {
+    if (!undoStack.length) return;
+    redoStack.push(JSON.parse(JSON.stringify(layers)));
+    layers=undoStack.pop(); refreshGrid(); updateAll(); showToast(t('toastUndo'));
+}
+function redo() {
+    if (!redoStack.length) return;
+    undoStack.push(JSON.parse(JSON.stringify(layers)));
+    layers=redoStack.pop(); refreshGrid(); updateAll(); showToast(t('toastRedo'));
+}
+
+// ========== PYWEBVIEW ==========
+function isPywebview() { return typeof pywebview!=='undefined' && pywebview.api; }
+
+// ========== FILE I/O ==========
+async function saveProject() {
+    const data = {
+        version:1, name:document.getElementById('recipe-name').value,
+        output:document.getElementById('recipe-output').value,
+        quantity:parseInt(document.getElementById('recipe-quantity').value)||1,
+        recipeMode:recipeMode, gridW:GRID_W, gridH:GRID_H, layers:layers
+    };
+    const content = JSON.stringify(data,null,'\t');
+    const fn = (data.name||'project')+'.json';
+    if (isPywebview()) {
+        const path = await pywebview.api.save_file_dialog(fn,'json');
+        if (!path) return;
+        const r = await pywebview.api.save_file(path,content);
+        if (r===true) { markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
+    } else { downloadBlob(new Blob([content]),fn); markClean(); showToast(t('toastSaved')); }
+}
+
+async function loadProject() {
+    if (isPywebview()) {
+        const r = await pywebview.api.open_file_dialog();
+        if (!r) return;
+        if (r.error) { showToast('Error: '+r.error,true); return; }
+        parseAndLoad(r.content);
+    } else { document.getElementById('file-input-load').click(); }
+}
+
+function loadProjectFromFile(f) {
+    const rd = new FileReader();
+    rd.onload = e => parseAndLoad(e.target.result);
+    rd.readAsText(f);
+}
+
+function parseAndLoad(text) {
+    try {
+        const d = JSON.parse(text);
+        if (d.version && d.layers) loadAnvilProject(d);
+        else if (d.pattern) loadSmithingRecipe(d);
+        else showToast(t('toastBadFile'),true);
+    } catch(e) { showToast('Error: '+e.message,true); }
+}
+
+function loadAnvilProject(d) {
+    saveUndo();
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) layers[l][r].fill(false);
+    const nl = Math.min(d.layers.length,LAYERS);
+    for (let l=0;l<nl;l++) {
+        const nr=Math.min(d.layers[l].length,GRID_H);
+        for (let r=0;r<nr;r++) {
+            const nc=Math.min(d.layers[l][r].length,GRID_W);
+            for (let c=0;c<nc;c++) layers[l][r][c]=!!d.layers[l][r][c];
+        }
+    }
+    if (d.name) document.getElementById('recipe-name').value=d.name;
+    if (d.output) document.getElementById('recipe-output').value=d.output;
+    if (d.quantity) document.getElementById('recipe-quantity').value=d.quantity;
+    if (d.recipeMode) setRecipeMode(d.recipeMode);
+    refreshGrid(); updateAll(); markClean(); showToast(t('toastLoaded'));
+}
+
+function loadSmithingRecipe(d) {
+    saveUndo();
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) layers[l][r].fill(false);
+    if (d.name) document.getElementById('recipe-name').value=d.name;
+    if (d.output) {
+        document.getElementById('recipe-output').value=d.output.code||'';
+        document.getElementById('recipe-quantity').value=d.output.quantity||1;
+    }
+    if (d.pattern && Array.isArray(d.pattern)) {
+        for (let l=0;l<d.pattern.length&&l<LAYERS;l++) {
+            if (!Array.isArray(d.pattern[l])) continue;
+            for (let r=0;r<d.pattern[l].length&&r<GRID_H;r++) {
+                const rs=d.pattern[l][r]; if (typeof rs!=='string') continue;
+                for (let c=0;c<rs.length&&c<GRID_W;c++) layers[l][r][c]=(rs[c]==='#');
+            }
+        }
+    }
+    if (d.ingredient?.code?.includes('clay')) setRecipeMode('clay'); else setRecipeMode('smithing');
+    refreshGrid(); updateAll(); markClean(); showToast(t('toastRecipeLoaded'));
+}
+
+async function exportRecipe() {
+    const json = generateRecipeJson();
+    const fn = (document.getElementById('recipe-name').value||'recipe')+'.json';
+    if (isPywebview()) {
+        const path = await pywebview.api.save_file_dialog(fn,'json');
+        if (!path) return;
+        const r = await pywebview.api.save_file(path,json);
+        if (r===true) showToast(t('toastExported')); else showToast('Error: '+r,true);
+    } else { downloadBlob(new Blob([json]),fn); showToast(t('toastExported')); }
+}
+
+function downloadBlob(b,fn) {
+    const u=URL.createObjectURL(b), a=document.createElement('a');
+    a.href=u; a.download=fn; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
+}
+
+// ========== DRAG & DROP ==========
+function setupDragDrop() {
+    const ov=document.getElementById('drop-overlay'); let dc=0;
+    document.addEventListener('dragenter', e=>{e.preventDefault();dc++;ov.classList.add('visible');});
+    document.addEventListener('dragleave', e=>{e.preventDefault();dc--;if(dc<=0){dc=0;ov.classList.remove('visible');}});
+    document.addEventListener('dragover', e=>e.preventDefault());
+    document.addEventListener('drop', e=>{
+        e.preventDefault();dc=0;ov.classList.remove('visible');
+        if(e.dataTransfer.files.length>0) loadProjectFromFile(e.dataTransfer.files[0]);
+    });
+}
+
+// ========== KEYBOARD ==========
+function setupKeyboard() {
+    document.addEventListener('keydown', e=>{
+        if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT') return;
+        if (e.ctrlKey||e.metaKey) {
+            if (e.key==='s'||e.key==='ы') { e.preventDefault(); saveProject(); }
+            else if (e.key==='o'||e.key==='щ') { e.preventDefault(); loadProject(); }
+            else if (e.key==='e'||e.key==='у') { e.preventDefault(); exportRecipe(); }
+            else if (e.key==='z'||e.key==='я') { e.preventDefault(); undo(); }
+            else if (e.key==='y'||e.key==='н') { e.preventDefault(); redo(); }
+            return;
+        }
+        if (e.key==='1') setBrush(1,'fill');
+        if (e.key==='2') setBrush(2,'fill');
+        if (e.key==='3') setBrush(3,'fill');
+        if (e.key==='e'||e.key==='у') setBrush(1,'erase');
+        if (e.key==='w'||e.key==='ц') { if(currentLayer<LAYERS-1) switchLayer(currentLayer+1); }
+        if (e.key==='s'||e.key==='ы') { if(currentLayer>0) switchLayer(currentLayer-1); }
+    });
+
+    // Mouse wheel — scroll layers (on grid area)
+    const gridArea = document.querySelector('.grid-area');
+    if (gridArea) {
+        gridArea.addEventListener('wheel', e => {
+            e.preventDefault();
+            if (e.deltaY < 0) { if (currentLayer < LAYERS - 1) switchLayer(currentLayer + 1); }
+            else if (e.deltaY > 0) { if (currentLayer > 0) switchLayer(currentLayer - 1); }
+        }, { passive: false });
+    }
+}
+
+// ========== FILE INPUT ==========
+function setupFileInputs() {
+    document.getElementById('file-input-load').addEventListener('change', e=>{
+        if(e.target.files.length>0) loadProjectFromFile(e.target.files[0]);
+        e.target.value='';
+    });
+}
+
+// ========== TOAST ==========
+function showToast(msg,err) {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className='toast visible'+(err?' error':'');
+    clearTimeout(t._t); t._t=setTimeout(()=>{t.className='toast';},2000);
+}
+
+// ========== CRAFT RESULT INFO ==========
+function updateCraftResultInfo() {
+    const output = document.getElementById('recipe-output').value || '';
+    const qty = parseInt(document.getElementById('recipe-quantity').value) || 1;
+    const name = document.getElementById('recipe-name').value || '';
+    const el = document.getElementById('craft-result-info');
+    if (!el) return;
+
+    // Parse output code to readable name
+    let displayName = output;
+    // Remove "game:" prefix
+    displayName = displayName.replace(/^game:/, '');
+    // Replace {metal} with placeholder text
+    const hasMetal = displayName.includes('{metal}');
+    if (hasMetal) displayName = displayName.replace('{metal}', '✱');
+
+    const lines = [];
+    if (currentLang === 'ru') {
+        lines.push('<span class="cr-label">Предмет: </span><span class="cr-value">' + escHtml(displayName) + '</span>');
+        if (qty > 1) lines.push('<span class="cr-label">Количество: </span><span class="cr-value">' + qty + '</span>');
+        if (hasMetal) lines.push('<span class="cr-label" style="font-size:calc(8px * var(--ui-scale))">✱ — тип металла подставится автоматически</span>');
+        lines.push('<span class="cr-label">Режим: </span><span class="cr-value">' + (recipeMode === 'smithing' ? 'Ковка' : 'Лепка из глины') + '</span>');
+    } else {
+        lines.push('<span class="cr-label">Item: </span><span class="cr-value">' + escHtml(displayName) + '</span>');
+        if (qty > 1) lines.push('<span class="cr-label">Quantity: </span><span class="cr-value">' + qty + '</span>');
+        if (hasMetal) lines.push('<span class="cr-label" style="font-size:calc(8px * var(--ui-scale))">✱ — metal type is substituted automatically</span>');
+        lines.push('<span class="cr-label">Mode: </span><span class="cr-value">' + (recipeMode === 'smithing' ? 'Smithing' : 'Clay forming') + '</span>');
+    }
+    el.innerHTML = lines.join('<br>');
+}
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+// ========== UPDATE ==========
+function updateAll() { updateStats(); updateJsonPreview(); render3D(); renderMiniPreviews(); updateCraftResultInfo(); }
+
+document.getElementById('recipe-name').addEventListener('input', () => { markDirty(); updateJsonPreview(); updateCraftResultInfo(); });
+document.getElementById('recipe-output').addEventListener('input', () => { markDirty(); updateJsonPreview(); updateCraftResultInfo(); });
+document.getElementById('recipe-quantity').addEventListener('input', () => { markDirty(); updateJsonPreview(); updateCraftResultInfo(); });
+
+// ========== CLOSE CONFIRMATION ==========
+// Pywebview: unsaved state synced to Python via set_unsaved_state(),
+// Python closing handler shows native dialog (no evaluate_js deadlock).
+// Browser fallback: beforeunload shows browser's native dialog.
+window.addEventListener('beforeunload', (e) => {
+    if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+});
+
+init();
+</script>
+</body>
+</html>
