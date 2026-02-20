@@ -19,6 +19,7 @@
 - 3 цветовые темы, 2 языка (RU/EN)
 - Горячие клавиши для всех основных действий
 - Поворот текущего слоя или всех слоёв на 90° (кнопки + горячие клавиши R / Shift+R)
+- Превью области кисти: окантовка на сетке показывает зону заполнения при наведении
 
 ## Автор
 
@@ -65,6 +66,7 @@ The application lets you draw recipes on a 16×16 grid (up to 16 layers), see a 
 - 3 color themes, 2 languages (RU/EN)
 - Keyboard shortcuts for all main actions
 - Rotate current layer or all layers by 90° (buttons + hotkeys R / Shift+R)
+- Brush area preview: outline on the grid shows the fill zone on hover
 
 ## Author
 
