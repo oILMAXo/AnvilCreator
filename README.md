@@ -18,6 +18,7 @@
 - Drag & drop файлов
 - 3 цветовые темы, 2 языка (RU/EN)
 - Горячие клавиши для всех основных действий
+- Поворот текущего слоя или всех слоёв на 90° (кнопки + горячие клавиши R / Shift+R)
 
 ## Автор
 
@@ -63,6 +64,7 @@ The application lets you draw recipes on a 16×16 grid (up to 16 layers), see a 
 - Drag & drop file support
 - 3 color themes, 2 languages (RU/EN)
 - Keyboard shortcuts for all main actions
+- Rotate current layer or all layers by 90° (buttons + hotkeys R / Shift+R)
 
 ## Author
 

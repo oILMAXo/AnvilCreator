@@ -482,6 +482,10 @@ body {
                 <button onclick="clearLayer()" data-i18n="clearLayer" data-tooltip-key="tipClearLayer">🗑</button>
                 <button onclick="fillLayer()" data-i18n="fillLayer" data-tooltip-key="tipFillLayer">◼</button>
             </div>
+            <div class="layer-actions">
+                <button onclick="rotateLayer()" data-i18n="rotateLayer" data-tooltip-key="tipRotateLayer">🔄</button>
+                <button onclick="rotateAll()" data-i18n="rotateAll" data-tooltip-key="tipRotateAll">🔁</button>
+            </div>
         </div>
 
         <!-- Stats -->
@@ -505,6 +509,8 @@ body {
                 <kbd>Ctrl+E</kbd> — <span data-i18n="hk_export">экспорт</span><br>
                 <kbd>Ctrl+Z</kbd> — <span data-i18n="hk_undo">отменить</span><br>
                 <kbd>Ctrl+Y</kbd> — <span data-i18n="hk_redo">повторить</span><br>
+                <kbd>R</kbd> — <span data-i18n="hk_rotate">поворот слоя</span><br>
+                <kbd>Shift+R</kbd> — <span data-i18n="hk_rotateAll">поворот всех</span><br>
                 <kbd>ПКМ</kbd> — <span data-i18n="hk_rmb">стирать</span><br>
                 <kbd>⚙</kbd> — <span data-i18n="hk_wheel">колёсико = слой</span>
             </div>
@@ -595,11 +601,11 @@ const I18N = {
         undo: '↩', redo: '↪',
         lbl_name: 'Имя', lbl_output: 'Выход', lbl_qty: 'Количество',
         brushes: 'Кисти', erasers: 'Резинка',
-        layers: 'Слои', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼',
+        layers: 'Слои', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼', rotateLayer: '🔄', rotateAll: '🔁',
         stats: 'Статистика', st_layer: 'Слой:', st_total: 'Всего:', st_ingots: 'Слитков:',
         st_hint: '1 слиток = 42 вокс.',
         hotkeys: 'Горячие клавиши', hk_brush: 'кисть', hk_eraser: 'резинка',
-        hk_layer: 'слой ↑/↓', hk_save: 'сохранить', hk_open: 'загрузить',
+        hk_layer: 'слой ↑/↓', hk_rotate: 'поворот слоя', hk_rotateAll: 'поворот всех', hk_save: 'сохранить', hk_open: 'загрузить',
         hk_export: 'экспорт', hk_undo: 'отменить', hk_redo: 'повторить', hk_rmb: 'стирать',
         hk_wheel: 'колёсико = слой',
         legend: 'Обозначения', leg_above: 'заполнено на слое выше', leg_below: 'заполнено на слое ниже',
@@ -611,7 +617,7 @@ const I18N = {
         toastRecipeLoaded: 'Рецепт загружен', toastExported: 'Рецепт экспортирован',
         toastUndo: 'Отмена', toastRedo: 'Повтор',
         toastCopied: 'Слой скопирован', toastPasted: 'Слой вставлен',
-        toastCleared: 'Слой очищен', toastFilled: 'Слой заполнен',
+        toastCleared: 'Слой очищен', toastFilled: 'Слой заполнен', toastRotated: 'Слой повёрнут', toastRotatedAll: 'Все слои повёрнуты',
         toastAllCleared: 'Все слои очищены', toastNoPaste: 'Нечего вставлять',
         toastBadFile: 'Неизвестный формат', confirmClear: 'Очистить все слои?',
         emptyLabel: 'Пусто',
@@ -622,6 +628,7 @@ const I18N = {
         tipUndo: 'Отменить (Ctrl+Z)', tipRedo: 'Повторить (Ctrl+Y)',
         tipCopy: 'Копировать слой', tipPaste: 'Вставить слой',
         tipClearLayer: 'Очистить слой', tipFillLayer: 'Заполнить слой',
+        tipRotateLayer: 'Повернуть слой на 90° (R)', tipRotateAll: 'Повернуть все слои на 90° (Shift+R)',
         tipAbove: 'Перейти на слой выше (W)', tipBelow: 'Перейти на слой ниже (S)',
         tipName: 'Внутреннее имя рецепта для файла',
         tipOutput: 'Код предмета-результата крафта.\n{metal} — подставится тип металла',
@@ -633,11 +640,11 @@ const I18N = {
         undo: '↩', redo: '↪',
         lbl_name: 'Name', lbl_output: 'Output', lbl_qty: 'Quantity',
         brushes: 'Brushes', erasers: 'Eraser',
-        layers: 'Layers', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼',
+        layers: 'Layers', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼', rotateLayer: '🔄', rotateAll: '🔁',
         stats: 'Statistics', st_layer: 'Layer:', st_total: 'Total:', st_ingots: 'Ingots:',
         st_hint: '1 ingot = 42 voxels',
         hotkeys: 'Hotkeys', hk_brush: 'brush', hk_eraser: 'eraser',
-        hk_layer: 'layer ↑/↓', hk_save: 'save', hk_open: 'load',
+        hk_layer: 'layer ↑/↓', hk_rotate: 'rotate layer', hk_rotateAll: 'rotate all', hk_save: 'save', hk_open: 'load',
         hk_export: 'export', hk_undo: 'undo', hk_redo: 'redo', hk_rmb: 'erase',
         hk_wheel: 'scroll = layer',
         legend: 'Legend', leg_above: 'filled on layer above', leg_below: 'filled on layer below',
@@ -649,7 +656,7 @@ const I18N = {
         toastRecipeLoaded: 'Recipe loaded', toastExported: 'Recipe exported',
         toastUndo: 'Undo', toastRedo: 'Redo',
         toastCopied: 'Layer copied', toastPasted: 'Layer pasted',
-        toastCleared: 'Layer cleared', toastFilled: 'Layer filled',
+        toastCleared: 'Layer cleared', toastFilled: 'Layer filled', toastRotated: 'Layer rotated', toastRotatedAll: 'All layers rotated',
         toastAllCleared: 'All layers cleared', toastNoPaste: 'Nothing to paste',
         toastBadFile: 'Unknown format', confirmClear: 'Clear all layers?',
         emptyLabel: 'Empty',
@@ -660,6 +667,7 @@ const I18N = {
         tipUndo: 'Undo (Ctrl+Z)', tipRedo: 'Redo (Ctrl+Y)',
         tipCopy: 'Copy layer', tipPaste: 'Paste layer',
         tipClearLayer: 'Clear layer', tipFillLayer: 'Fill layer',
+        tipRotateLayer: 'Rotate layer 90° (R)', tipRotateAll: 'Rotate all layers 90° (Shift+R)',
         tipAbove: 'Go to layer above (W)', tipBelow: 'Go to layer below (S)',
         tipName: 'Internal recipe name for the file',
         tipOutput: 'Item code for the crafting result.\n{metal} — substituted with metal type',
@@ -977,6 +985,24 @@ function clearLayer() {
 function fillLayer() {
     saveUndo(); for (let r=0;r<GRID_H;r++) layers[currentLayer][r].fill(true);
     refreshGrid(); updateAll(); showToast(t('toastFilled'));
+}
+function rotateLayerData(layerData) {
+    const newLayer = [];
+    for (let r = 0; r < GRID_H; r++) newLayer[r] = new Array(GRID_W).fill(false);
+    for (let r = 0; r < GRID_H; r++)
+        for (let c = 0; c < GRID_W; c++)
+            newLayer[c][GRID_H - 1 - r] = layerData[r][c];
+    return newLayer;
+}
+function rotateLayer() {
+    saveUndo();
+    layers[currentLayer] = rotateLayerData(layers[currentLayer]);
+    refreshGrid(); updateAll(); showToast(t('toastRotated'));
+}
+function rotateAll() {
+    saveUndo();
+    for (let l = 0; l < LAYERS; l++) layers[l] = rotateLayerData(layers[l]);
+    refreshGrid(); updateAll(); showToast(t('toastRotatedAll'));
 }
 function clearAll() {
     if (!confirm(t('confirmClear'))) return;
@@ -1387,6 +1413,8 @@ function setupKeyboard() {
         if (e.key==='e'||e.key==='у') setBrush(1,'erase');
         if (e.key==='w'||e.key==='ц') { if(currentLayer<LAYERS-1) switchLayer(currentLayer+1); }
         if (e.key==='s'||e.key==='ы') { if(currentLayer>0) switchLayer(currentLayer-1); }
+        if (e.key==='R'||e.key==='К') { e.preventDefault(); rotateAll(); }
+        else if (e.key==='r'||e.key==='к') { rotateLayer(); }
     });
 
     // Mouse wheel — scroll layers (on grid area)
