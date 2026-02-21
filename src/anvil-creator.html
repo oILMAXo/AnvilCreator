@@ -1606,7 +1606,7 @@ function isPywebview() { return typeof pywebview!=='undefined' && pywebview.api;
 
 // ========== FILE I/O ==========
 async function saveProject() {
-    const content = generateRecipeJson(true);
+    const content = generateRecipeJson(false);
     if (isPywebview() && currentFilePath) {
         const r = await pywebview.api.save_file(currentFilePath, content);
         if (r===true) { markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
@@ -1614,7 +1614,7 @@ async function saveProject() {
 }
 
 async function saveProjectAs() {
-    const content = generateRecipeJson(true);
+    const content = generateRecipeJson(false);
     const fn = (document.getElementById('recipe-name').value||'project')+'.json';
     if (isPywebview()) {
         const path = await pywebview.api.save_file_dialog(fn,'json');
@@ -1725,11 +1725,33 @@ function loadSmithingRecipe(d) {
         document.getElementById('recipe-quantity').value=d.output.quantity||1;
     }
     if (d.pattern && Array.isArray(d.pattern)) {
-        for (let l=0;l<d.pattern.length&&l<LAYERS;l++) {
+        // Определить размеры обрезанного pattern
+        let patH=0, patW=0;
+        for (let l=0;l<d.pattern.length;l++) {
             if (!Array.isArray(d.pattern[l])) continue;
-            for (let r=0;r<d.pattern[l].length&&r<GRID_H;r++) {
+            if (d.pattern[l].length>patH) patH=d.pattern[l].length;
+            for (let r=0;r<d.pattern[l].length;r++) {
+                if (typeof d.pattern[l][r]==='string' && d.pattern[l][r].length>patW)
+                    patW=d.pattern[l][r].length;
+            }
+        }
+        // Центрировать в сетке 16×16
+        const offR = Math.floor((GRID_H - patH) / 2);
+        const offC = Math.floor((GRID_W - patW) / 2);
+        const offL = Math.floor((LAYERS - d.pattern.length) / 2);
+        for (let l=0;l<d.pattern.length&&(l+offL)<LAYERS;l++) {
+            if (!Array.isArray(d.pattern[l])) continue;
+            const tl = l + offL;
+            if (tl<0) continue;
+            for (let r=0;r<d.pattern[l].length;r++) {
                 const rs=d.pattern[l][r]; if (typeof rs!=='string') continue;
-                for (let c=0;c<rs.length&&c<GRID_W;c++) layers[l][r][c]=(rs[c]==='#');
+                const tr = r + offR;
+                if (tr<0||tr>=GRID_H) continue;
+                for (let c=0;c<rs.length;c++) {
+                    const tc = c + offC;
+                    if (tc<0||tc>=GRID_W) continue;
+                    layers[tl][tr][tc]=(rs[c]==='#');
+                }
             }
         }
     }
