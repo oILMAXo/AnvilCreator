@@ -106,6 +106,59 @@ body {
 }
 
 /* ===== TOOLBAR ===== */
+/* ===== MENU BAR ===== */
+.menubar {
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    min-height: calc(28px * var(--ui-scale));
+    flex-shrink: 0;
+    padding: 0 calc(4px * var(--ui-scale));
+}
+.menubar .app-title {
+    font-size: calc(13px * var(--ui-scale)); color: var(--accent); font-weight: bold;
+    padding: 0 calc(10px * var(--ui-scale)); white-space: nowrap;
+}
+.menu-item {
+    position: relative; display: inline-block;
+}
+.menu-item-btn {
+    padding: calc(4px * var(--ui-scale)) calc(12px * var(--ui-scale));
+    background: transparent; border: none; color: var(--text-secondary);
+    cursor: pointer; font-size: calc(12px * var(--ui-scale)); white-space: nowrap;
+    transition: background 0.1s;
+}
+.menu-item-btn:hover, .menu-item.open .menu-item-btn {
+    background: var(--bg-tertiary); color: var(--text-primary);
+}
+.menu-dropdown {
+    display: none; position: absolute; top: 100%; left: 0;
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 0 0 calc(4px * var(--ui-scale)) calc(4px * var(--ui-scale));
+    min-width: calc(220px * var(--ui-scale)); z-index: 5000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    padding: calc(4px * var(--ui-scale)) 0;
+}
+.menu-item.open .menu-dropdown { display: block; }
+.menu-dropdown-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: calc(6px * var(--ui-scale)) calc(14px * var(--ui-scale));
+    color: var(--text-secondary); cursor: pointer; font-size: calc(12px * var(--ui-scale));
+    transition: background 0.1s; white-space: nowrap; border: none; background: none; width: 100%; text-align: left;
+}
+.menu-dropdown-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.menu-dropdown-item .shortcut { color: var(--text-dim); font-size: calc(10px * var(--ui-scale)); margin-left: calc(20px * var(--ui-scale)); }
+.menu-dropdown-item.danger:hover { background: var(--accent); color: #fff; }
+.menu-sep { height: 1px; background: var(--border); margin: calc(4px * var(--ui-scale)) calc(8px * var(--ui-scale)); }
+.menubar .spacer { flex: 1; }
+.menubar .author-tag {
+    font-size: calc(9px * var(--ui-scale)); color: var(--text-dim); white-space: nowrap;
+    font-style: italic; opacity: 0.6; cursor: default; padding-right: calc(8px * var(--ui-scale));
+}
+
+/* ===== TOOLBAR ===== */
 .toolbar {
     background: var(--toolbar-bg);
     padding: calc(4px * var(--ui-scale)) calc(10px * var(--ui-scale));
@@ -113,12 +166,9 @@ body {
     align-items: center;
     gap: calc(6px * var(--ui-scale));
     border-bottom: 2px solid var(--accent);
-    min-height: calc(36px * var(--ui-scale));
+    min-height: calc(32px * var(--ui-scale));
     flex-shrink: 0;
     flex-wrap: wrap;
-}
-.toolbar .app-title {
-    font-size: calc(15px * var(--ui-scale)); color: var(--accent); font-weight: bold; margin-right: calc(4px * var(--ui-scale)); white-space: nowrap;
 }
 .toolbar-sep { width: 1px; height: calc(24px * var(--ui-scale)); background: var(--border); margin: 0 calc(3px * var(--ui-scale)); }
 .tb-btn {
@@ -127,12 +177,9 @@ body {
     white-space: nowrap; transition: all 0.12s;
 }
 .tb-btn:hover { border-color: var(--accent2); background: var(--bg-secondary); color: var(--text-primary); }
+.tb-btn.tb-btn-small { padding: calc(3px * var(--ui-scale)) calc(5px * var(--ui-scale)); font-size: calc(11px * var(--ui-scale)); margin-left: calc(-2px * var(--ui-scale)); }
 .tb-btn.danger:hover { border-color: var(--accent); background: var(--accent); color: #fff; }
 .toolbar .spacer { flex: 1; }
-.author-tag {
-    font-size: calc(9px * var(--ui-scale)); color: var(--text-dim); white-space: nowrap;
-    font-style: italic; opacity: 0.6; cursor: default;
-}
 .toolbar .recipe-field { display: flex; align-items: center; gap: 3px; }
 .toolbar .recipe-field label { font-size: calc(10px * var(--ui-scale)); color: var(--text-muted); text-transform: uppercase; }
 .toolbar .recipe-field input {
@@ -195,6 +242,17 @@ body {
     overflow: visible;
 }
 .layer-actions button:hover { border-color: var(--accent2); }
+
+/* Move controls */
+.move-controls { display: flex; flex-direction: column; align-items: center; gap: calc(2px * var(--ui-scale)); margin-top: calc(3px * var(--ui-scale)); }
+.move-row { display: flex; gap: calc(2px * var(--ui-scale)); }
+.move-btn {
+    width: calc(32px * var(--ui-scale)); height: calc(24px * var(--ui-scale));
+    border: 1px solid var(--border); border-radius: calc(3px * var(--ui-scale));
+    background: var(--bg-tertiary); color: var(--text-secondary); cursor: pointer;
+    font-size: calc(11px * var(--ui-scale)); transition: all 0.12s; display: flex; align-items: center; justify-content: center;
+}
+.move-btn:hover { border-color: var(--accent2); background: var(--bg-secondary); color: var(--text-primary); }
 
 /* Stats */
 .stats-row { display: flex; justify-content: space-between; font-size: calc(10px * var(--ui-scale)); padding: calc(2px * var(--ui-scale)) 0; }
@@ -391,24 +449,89 @@ body {
 </head>
 <body>
 
+<!-- Menu bar -->
+<div class="menubar">
+    <span class="app-title">⚒ Anvil Creator</span>
+    <!-- File menu -->
+    <div class="menu-item" id="menu-file">
+        <button class="menu-item-btn" onclick="toggleMenu('menu-file')" data-i18n="menuFile">Файл</button>
+        <div class="menu-dropdown">
+            <button class="menu-dropdown-item" onclick="saveProject(); closeMenus();">
+                <span>💾 <span data-i18n="mSave">Сохранить</span></span>
+                <span class="shortcut">Ctrl+S</span>
+            </button>
+            <button class="menu-dropdown-item" onclick="saveProjectAs(); closeMenus();">
+                <span>💾 <span data-i18n="mSaveAs">Сохранить как...</span></span>
+                <span class="shortcut">Ctrl+Shift+S</span>
+            </button>
+            <button class="menu-dropdown-item" onclick="loadProject(); closeMenus();">
+                <span>📂 <span data-i18n="mLoad">Импорт</span></span>
+                <span class="shortcut">Ctrl+O</span>
+            </button>
+            <div class="menu-sep"></div>
+            <button class="menu-dropdown-item" onclick="exportRecipe(); closeMenus();">
+                <span>📤 <span data-i18n="mExport">Экспорт рецепта</span></span>
+                <span class="shortcut">Ctrl+E</span>
+            </button>
+            <div class="menu-sep"></div>
+            <button class="menu-dropdown-item danger" onclick="clearAll(); closeMenus();">
+                <span>🗑 <span data-i18n="mClear">Очистить всё</span></span>
+            </button>
+        </div>
+    </div>
+    <!-- Edit menu -->
+    <div class="menu-item" id="menu-edit">
+        <button class="menu-item-btn" onclick="toggleMenu('menu-edit')" data-i18n="menuEdit">Правка</button>
+        <div class="menu-dropdown">
+            <button class="menu-dropdown-item" onclick="undo(); closeMenus();">
+                <span>↩ <span data-i18n="mUndo">Отменить</span></span>
+                <span class="shortcut">Ctrl+Z</span>
+            </button>
+            <button class="menu-dropdown-item" onclick="redo(); closeMenus();">
+                <span>↪ <span data-i18n="mRedo">Повторить</span></span>
+                <span class="shortcut">Ctrl+Y</span>
+            </button>
+            <div class="menu-sep"></div>
+            <button class="menu-dropdown-item" onclick="rotateLayer(); closeMenus();">
+                <span>🔄 <span data-i18n="mRotateLayer">Повернуть слой</span></span>
+                <span class="shortcut">R</span>
+            </button>
+            <button class="menu-dropdown-item" onclick="rotateAll(); closeMenus();">
+                <span>🔁 <span data-i18n="mRotateAll">Повернуть все слои</span></span>
+                <span class="shortcut">Shift+R</span>
+            </button>
+        </div>
+    </div>
+    <!-- Settings menu -->
+    <div class="menu-item" id="menu-settings">
+        <button class="menu-item-btn" onclick="toggleMenu('menu-settings')" data-i18n="menuSettings">Настройки</button>
+        <div class="menu-dropdown">
+            <div class="menu-dropdown-item" style="cursor:default;">
+                <span>🌐 <span data-i18n="mLang">Язык</span></span>
+                <select class="toolbar-select" id="lang-select" onchange="setLang(this.value)" onclick="event.stopPropagation()">
+                    <option value="ru">🇷🇺 RU</option>
+                    <option value="en">🇬🇧 EN</option>
+                </select>
+            </div>
+            <div class="menu-dropdown-item" style="cursor:default;">
+                <span>🎨 <span data-i18n="mTheme">Тема</span></span>
+                <select class="toolbar-select" id="theme-select" onchange="setTheme(this.value)" onclick="event.stopPropagation()">
+                    <option value="blue" data-i18n-opt="themeBlue">🔵 Синяя</option>
+                    <option value="dark" data-i18n-opt="themeDark">⚫ Тёмная</option>
+                    <option value="light" data-i18n-opt="themeLight">⚪ Светлая</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="spacer"></div>
+    <span class="author-tag" data-tooltip="Made by Claude (Anthropic AI) for ilmax">by Claude AI</span>
+</div>
+
 <!-- Toolbar -->
 <div class="toolbar">
-    <span class="app-title">⚒ Anvil Creator</span>
-    <div class="toolbar-sep"></div>
-    <select class="toolbar-select" id="lang-select" onchange="setLang(this.value)">
-        <option value="ru">🇷🇺 RU</option>
-        <option value="en">🇬🇧 EN</option>
-    </select>
-    <select class="toolbar-select" id="theme-select" onchange="setTheme(this.value)">
-        <option value="blue" data-i18n-opt="themeBlue">🔵 Синяя</option>
-        <option value="dark" data-i18n-opt="themeDark">⚫ Тёмная</option>
-        <option value="light" data-i18n-opt="themeLight">⚪ Светлая</option>
-    </select>
-    <div class="toolbar-sep"></div>
     <button class="tb-btn" onclick="saveProject()" data-i18n="save" data-tooltip-key="tipSave">💾 Сохранить</button>
-    <button class="tb-btn" onclick="loadProject()" data-i18n="load" data-tooltip-key="tipLoad">📂 Загрузить</button>
+    <button class="tb-btn" onclick="loadProject()" data-i18n="load" data-tooltip-key="tipLoad">📂 Импорт</button>
     <button class="tb-btn" onclick="exportRecipe()" data-i18n="export" data-tooltip-key="tipExport">📤 Экспорт</button>
-    <button class="tb-btn danger" onclick="clearAll()" data-i18n="clearAll" data-tooltip-key="tipClear">🗑 Очистить</button>
     <div class="toolbar-sep"></div>
     <button class="tb-btn" onclick="undo()" data-i18n="undo" data-tooltip-key="tipUndo">↩</button>
     <button class="tb-btn" onclick="redo()" data-i18n="redo" data-tooltip-key="tipRedo">↪</button>
@@ -425,8 +548,6 @@ body {
         <label data-i18n="lbl_qty">Количество</label>
         <input type="number" id="recipe-quantity" value="1" min="1" max="64" class="short">
     </div>
-    <div class="spacer"></div>
-    <span class="author-tag" data-tooltip="Made by Claude (Anthropic AI) for ilmax">by Claude AI</span>
 </div>
 
 <!-- Main -->
@@ -496,6 +617,23 @@ body {
             </div>
         </div>
 
+        <!-- Move model -->
+        <div class="panel-section">
+            <h3 data-i18n="moveModel">Сдвиг</h3>
+            <div class="move-controls">
+                <div class="move-row">
+                    <button class="move-btn" onclick="moveModelAll(0,-1)" data-tooltip-key="tipMoveUp">▲</button>
+                </div>
+                <div class="move-row">
+                    <button class="move-btn" onclick="moveModelAll(-1,0)" data-tooltip-key="tipMoveLeft">◄</button>
+                    <button class="move-btn" onclick="moveModelAll(1,0)" data-tooltip-key="tipMoveRight">►</button>
+                </div>
+                <div class="move-row">
+                    <button class="move-btn" onclick="moveModelAll(0,1)" data-tooltip-key="tipMoveDown">▼</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Stats -->
         <div class="panel-section">
             <h3 data-i18n="stats">Статистика</h3>
@@ -513,10 +651,12 @@ body {
                 <kbd>E</kbd> — <span data-i18n="hk_eraser">резинка</span><br>
                 <kbd>W</kbd><kbd>S</kbd> — <span data-i18n="hk_layer">слой ↑/↓</span><br>
                 <kbd>Ctrl+S</kbd> — <span data-i18n="hk_save">сохранить</span><br>
+                <kbd>Ctrl+Shift+S</kbd> — <span data-i18n="hk_saveAs">сохранить как</span><br>
                 <kbd>Ctrl+O</kbd> — <span data-i18n="hk_open">загрузить</span><br>
                 <kbd>Ctrl+E</kbd> — <span data-i18n="hk_export">экспорт</span><br>
                 <kbd>Ctrl+Z</kbd> — <span data-i18n="hk_undo">отменить</span><br>
                 <kbd>Ctrl+Y</kbd> — <span data-i18n="hk_redo">повторить</span><br>
+                <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> — <span data-i18n="hk_move">сдвиг модели</span><br>
                 <kbd>R</kbd> — <span data-i18n="hk_rotate">поворот слоя</span><br>
                 <kbd>Shift+R</kbd> — <span data-i18n="hk_rotateAll">поворот всех</span><br>
                 <kbd>ПКМ</kbd> — <span data-i18n="hk_rmb">стирать</span><br>
@@ -605,16 +745,19 @@ body {
 // ========== I18N ==========
 const I18N = {
     ru: {
-        save: '💾 Сохранить', load: '📂 Загрузить', export: '📤 Экспорт', clearAll: '🗑 Очистить',
+        save: '💾 Сохранить', saveAs: '💾 Сохранить как', load: '📂 Импорт', export: '📤 Экспорт', clearAll: '🗑 Очистить',
         undo: '↩', redo: '↪',
         lbl_name: 'Имя', lbl_output: 'Выход', lbl_qty: 'Количество',
         brushes: 'Кисти', erasers: 'Резинка',
         layers: 'Слои', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼', rotateLayer: '🔄', rotateAll: '🔁',
+        moveModel: 'Сдвиг',
+        tipMoveUp: 'Сдвинуть вверх', tipMoveDown: 'Сдвинуть вниз', tipMoveLeft: 'Сдвинуть влево', tipMoveRight: 'Сдвинуть вправо',
+        toastMoved: 'Модель сдвинута',
         stats: 'Статистика', st_layer: 'Слой:', st_total: 'Всего:', st_ingots: 'Слитков:',
-        st_hint: '1 слиток = 42 вокс.',
+        st_hint: '1 слиток = 42 вокс.', st_clay: 'Глины:', st_hint_clay: '1 глина = 25 вокс.',
         hotkeys: 'Горячие клавиши', hk_brush: 'кисть', hk_eraser: 'резинка',
-        hk_layer: 'слой ↑/↓', hk_rotate: 'поворот слоя', hk_rotateAll: 'поворот всех', hk_save: 'сохранить', hk_open: 'загрузить',
-        hk_export: 'экспорт', hk_undo: 'отменить', hk_redo: 'повторить', hk_rmb: 'стирать',
+        hk_layer: 'слой ↑/↓', hk_move: 'сдвиг модели', hk_rotate: 'поворот слоя', hk_rotateAll: 'поворот всех', hk_save: 'сохранить', hk_open: 'импорт',
+        hk_export: 'экспорт', hk_saveAs: 'сохранить как', hk_undo: 'отменить', hk_redo: 'повторить', hk_rmb: 'стирать',
         hk_wheel: 'колёсико = слой',
         legend: 'Обозначения', leg_above: 'заполнено на слое выше', leg_below: 'заполнено на слое ниже',
         leg_both: 'заполнено выше и ниже', leg_filled: 'заполнено на текущем',
@@ -631,7 +774,7 @@ const I18N = {
         emptyLabel: 'Пусто',
         navAbove: 'выше', navBelow: 'ниже',
         themeBlue: '🔵 Синяя', themeDark: '⚫ Тёмная', themeLight: '⚪ Светлая',
-        tipSave: 'Сохранить проект (Ctrl+S)', tipLoad: 'Загрузить проект (Ctrl+O)',
+        tipSave: 'Сохранить проект (Ctrl+S)', tipSaveAs: 'Сохранить как новый файл (Ctrl+Shift+S)', tipLoad: 'Импорт проекта (Ctrl+O)',
         tipExport: 'Экспорт рецепта (Ctrl+E)', tipClear: 'Очистить все слои',
         tipUndo: 'Отменить (Ctrl+Z)', tipRedo: 'Повторить (Ctrl+Y)',
         tipCopy: 'Копировать слой', tipPaste: 'Вставить слой',
@@ -641,19 +784,27 @@ const I18N = {
         tipName: 'Внутреннее имя рецепта для файла',
         tipOutput: 'Код предмета-результата крафта.\n{metal} — подставится тип металла',
         tipQty: 'Количество предметов, которое игрок получит за один крафт по этому рецепту',
-        lbl_output_desc: 'Результат крафта'
+        lbl_output_desc: 'Результат крафта',
+        menuFile: 'Файл', menuEdit: 'Правка', menuSettings: 'Настройки',
+        mSave: 'Сохранить', mSaveAs: 'Сохранить как...', mLoad: 'Импорт',
+        mExport: 'Экспорт рецепта', mClear: 'Очистить всё',
+        mUndo: 'Отменить', mRedo: 'Повторить', mRotateLayer: 'Повернуть слой', mRotateAll: 'Повернуть все слои',
+        mLang: 'Язык', mTheme: 'Тема'
     },
     en: {
-        save: '💾 Save', load: '📂 Load', export: '📤 Export', clearAll: '🗑 Clear',
+        save: '💾 Save', saveAs: '💾 Save As', load: '📂 Import', export: '📤 Export', clearAll: '🗑 Clear',
         undo: '↩', redo: '↪',
         lbl_name: 'Name', lbl_output: 'Output', lbl_qty: 'Quantity',
         brushes: 'Brushes', erasers: 'Eraser',
         layers: 'Layers', copy: '📋', paste: '📌', clearLayer: '🗑', fillLayer: '◼', rotateLayer: '🔄', rotateAll: '🔁',
+        moveModel: 'Move',
+        tipMoveUp: 'Move up', tipMoveDown: 'Move down', tipMoveLeft: 'Move left', tipMoveRight: 'Move right',
+        toastMoved: 'Model moved',
         stats: 'Statistics', st_layer: 'Layer:', st_total: 'Total:', st_ingots: 'Ingots:',
-        st_hint: '1 ingot = 42 voxels',
+        st_hint: '1 ingot = 42 voxels', st_clay: 'Clay:', st_hint_clay: '1 clay = 25 voxels',
         hotkeys: 'Hotkeys', hk_brush: 'brush', hk_eraser: 'eraser',
-        hk_layer: 'layer ↑/↓', hk_rotate: 'rotate layer', hk_rotateAll: 'rotate all', hk_save: 'save', hk_open: 'load',
-        hk_export: 'export', hk_undo: 'undo', hk_redo: 'redo', hk_rmb: 'erase',
+        hk_layer: 'layer ↑/↓', hk_move: 'move model', hk_rotate: 'rotate layer', hk_rotateAll: 'rotate all', hk_save: 'save', hk_open: 'import',
+        hk_export: 'export', hk_saveAs: 'save as', hk_undo: 'undo', hk_redo: 'redo', hk_rmb: 'erase',
         hk_wheel: 'scroll = layer',
         legend: 'Legend', leg_above: 'filled on layer above', leg_below: 'filled on layer below',
         leg_both: 'filled above and below', leg_filled: 'filled on current layer',
@@ -670,7 +821,7 @@ const I18N = {
         emptyLabel: 'Empty',
         navAbove: 'above', navBelow: 'below',
         themeBlue: '🔵 Blue', themeDark: '⚫ Dark', themeLight: '⚪ Light',
-        tipSave: 'Save project (Ctrl+S)', tipLoad: 'Load project (Ctrl+O)',
+        tipSave: 'Save project (Ctrl+S)', tipSaveAs: 'Save as new file (Ctrl+Shift+S)', tipLoad: 'Import project (Ctrl+O)',
         tipExport: 'Export recipe (Ctrl+E)', tipClear: 'Clear all layers',
         tipUndo: 'Undo (Ctrl+Z)', tipRedo: 'Redo (Ctrl+Y)',
         tipCopy: 'Copy layer', tipPaste: 'Paste layer',
@@ -680,7 +831,12 @@ const I18N = {
         tipName: 'Internal recipe name for the file',
         tipOutput: 'Item code for the crafting result.\n{metal} — substituted with metal type',
         tipQty: 'Number of items the player receives per single craft with this recipe',
-        lbl_output_desc: 'Craft result'
+        lbl_output_desc: 'Craft result',
+        menuFile: 'File', menuEdit: 'Edit', menuSettings: 'Settings',
+        mSave: 'Save', mSaveAs: 'Save As...', mLoad: 'Import',
+        mExport: 'Export recipe', mClear: 'Clear all',
+        mUndo: 'Undo', mRedo: 'Redo', mRotateLayer: 'Rotate layer', mRotateAll: 'Rotate all layers',
+        mLang: 'Language', mTheme: 'Theme'
     }
 };
 
@@ -719,11 +875,37 @@ function setTheme(theme) {
     render3D();
 }
 
+// ========== MENU BAR ==========
+function toggleMenu(id) {
+    const el = document.getElementById(id);
+    const wasOpen = el.classList.contains('open');
+    closeMenus();
+    if (!wasOpen) el.classList.add('open');
+}
+function closeMenus() {
+    document.querySelectorAll('.menu-item.open').forEach(m => m.classList.remove('open'));
+}
+// Close menus on outside click
+document.addEventListener('mousedown', e => {
+    if (!e.target.closest('.menu-item')) closeMenus();
+});
+// Hover-open adjacent menus when one is already open
+document.addEventListener('mouseover', e => {
+    const openMenu = document.querySelector('.menu-item.open');
+    if (!openMenu) return;
+    const hovered = e.target.closest('.menu-item');
+    if (hovered && hovered !== openMenu) {
+        closeMenus();
+        hovered.classList.add('open');
+    }
+});
+
 // ========== STATE ==========
 const GRID_W = 16;
 const GRID_H = 16;
 const LAYERS = 16;
 const VOXELS_PER_INGOT = 42;
+const VOXELS_PER_CLAY = 25;
 
 let currentLayer = 0;
 let brushSize = 1;
@@ -741,6 +923,7 @@ for (let l = 0; l < LAYERS; l++) {
 
 let undoStack = [], redoStack = [], clipboardLayer = null;
 let hasUnsavedChanges = false;
+let currentFilePath = null;
 
 // 3D
 let rotX = -30, rotY = 45, isDragging3d = false, drag3dX, drag3dY;
@@ -1062,10 +1245,43 @@ function rotateAll() {
     for (let l = 0; l < LAYERS; l++) layers[l] = rotateLayerData(layers[l]);
     refreshGrid(); updateAll(); showToast(t('toastRotatedAll'));
 }
+// Move all layers by (dc, dr): dc=columns shift, dr=rows shift
+function moveModelAll(dc, dr) {
+    // Check bounds: find the bounding box of all filled voxels across all layers
+    let minR = GRID_H, maxR = -1, minC = GRID_W, maxC = -1;
+    for (let l = 0; l < LAYERS; l++) {
+        for (let r = 0; r < GRID_H; r++) {
+            for (let c = 0; c < GRID_W; c++) {
+                if (layers[l][r][c]) {
+                    if (r < minR) minR = r;
+                    if (r > maxR) maxR = r;
+                    if (c < minC) minC = c;
+                    if (c > maxC) maxC = c;
+                }
+            }
+        }
+    }
+    if (maxR === -1) return; // nothing to move
+    // Check if movement is within bounds
+    if (minC + dc < 0 || maxC + dc >= GRID_W) return;
+    if (minR + dr < 0 || maxR + dr >= GRID_H) return;
+    saveUndo();
+    for (let l = 0; l < LAYERS; l++) {
+        const newLayer = [];
+        for (let r = 0; r < GRID_H; r++) newLayer[r] = new Array(GRID_W).fill(false);
+        for (let r = 0; r < GRID_H; r++)
+            for (let c = 0; c < GRID_W; c++)
+                if (layers[l][r][c]) newLayer[r + dr][c + dc] = true;
+        layers[l] = newLayer;
+    }
+    refreshGrid(); updateAll(); showToast(t('toastMoved'));
+}
+
 function clearAll() {
     if (!confirm(t('confirmClear'))) return;
     saveUndo();
     for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) layers[l][r].fill(false);
+    currentFilePath = null;
     refreshGrid(); updateAll(); showToast(t('toastAllCleared'));
 }
 
@@ -1074,6 +1290,7 @@ function setRecipeMode(m) {
     recipeMode = m;
     document.getElementById('mode-smithing').className = 'mode-btn'+(m==='smithing'?' active':'');
     document.getElementById('mode-clay').className = 'mode-btn'+(m==='clay'?' active':'');
+    updateStats();
     updateJsonPreview();
     updateCraftResultInfo();
 }
@@ -1085,14 +1302,26 @@ function updateStats() {
     for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) for (let c=0;c<GRID_W;c++) if (layers[l][r][c]) tc++;
     document.getElementById('layer-count').textContent = lc;
     document.getElementById('total-count').textContent = tc;
-    const ing = Math.ceil(tc / VOXELS_PER_INGOT);
-    document.getElementById('ingot-count').textContent = tc === 0 ? '0' : ing;
+
+    const matLabel = document.querySelector('[data-i18n="st_ingots"]');
+    const matHint = document.querySelector('[data-i18n="st_hint"]');
+    if (recipeMode === 'clay') {
+        const clay = tc === 0 ? 0 : Math.ceil(tc / VOXELS_PER_CLAY);
+        document.getElementById('ingot-count').textContent = clay;
+        if (matLabel) matLabel.textContent = t('st_clay');
+        if (matHint) matHint.textContent = t('st_hint_clay');
+    } else {
+        const ing = tc === 0 ? 0 : Math.ceil(tc / VOXELS_PER_INGOT);
+        document.getElementById('ingot-count').textContent = ing;
+        if (matLabel) matLabel.textContent = t('st_ingots');
+        if (matHint) matHint.textContent = t('st_hint');
+    }
 }
 
 // ========== JSON ==========
-function generateRecipeJson() {
+function generateRecipeObject(includeProjectData) {
     const name = document.getElementById('recipe-name').value || 'myitem';
-    const output = document.getElementById('recipe-output').value || 'game:metalpart-{metal}';
+    const output = document.getElementById('recipe-output').value || 'metalpart-{metal}';
     const qty = parseInt(document.getElementById('recipe-quantity').value) || 1;
 
     let usedLayers=[], minR=GRID_H, maxR=-1, minC=GRID_W, maxC=-1;
@@ -1104,27 +1333,59 @@ function generateRecipeJson() {
         if (has) usedLayers.push(l);
     }
 
+    // Ingredient format matching vanilla VS recipes
     const ingr = recipeMode==='smithing'
-        ? {type:"item",code:"game:ingot-{metal}",name:"metal"}
-        : {type:"item",code:"game:clay-*",name:"clay"};
-
-    if (usedLayers.length===0)
-        return JSON.stringify({ingredient:ingr,name:name,pattern:[[]],output:{type:"item",code:output,quantity:qty}},null,'\t');
+        ? {type:"item",code:"ingot-*",name:"metal"}
+        : {type:"item",code:"clay-*",name:"color",allowedVariants:["blue","fire","red"]};
 
     let pattern=[];
-    for (let l=usedLayers[0]; l<=usedLayers[usedLayers.length-1]; l++) {
-        let lp=[];
-        for (let r=minR;r<=maxR;r++) {
-            let rs='';
-            for (let c=minC;c<=maxC;c++) rs += layers[l][r][c] ? '#' : '_';
-            lp.push(rs);
+    if (usedLayers.length > 0) {
+        for (let l=usedLayers[0]; l<=usedLayers[usedLayers.length-1]; l++) {
+            let lp=[];
+            for (let r=minR;r<=maxR;r++) {
+                let rs='';
+                for (let c=minC;c<=maxC;c++) rs += layers[l][r][c] ? '#' : '_';
+                lp.push(rs);
+            }
+            pattern.push(lp);
         }
-        pattern.push(lp);
     }
-    return JSON.stringify({ingredient:ingr,name:name,pattern:pattern,output:{type:"item",code:output,quantity:qty}},null,'\t');
+
+    const outObj = {type:"item",code:output};
+    if (qty > 1) outObj.quantity = qty;
+
+    const recipe = {ingredient:ingr, name:name, pattern:pattern, output:outObj};
+
+    // Embed project data so the file can be reloaded in the editor
+    if (includeProjectData) {
+        // Compress layers: only non-empty layers, rows as "#_" strings
+        const compactLayers = {};
+        for (let l=0; l<LAYERS; l++) {
+            let hasAny = false;
+            const rows = [];
+            for (let r=0; r<GRID_H; r++) {
+                let rs = '';
+                for (let c=0; c<GRID_W; c++) {
+                    if (layers[l][r][c]) hasAny = true;
+                    rs += layers[l][r][c] ? '#' : '_';
+                }
+                rows.push(rs);
+            }
+            if (hasAny) compactLayers[l] = rows;
+        }
+        recipe._anvilCreator = {
+            version: 2, recipeMode: recipeMode,
+            gridW: GRID_W, gridH: GRID_H, layerData: compactLayers
+        };
+    }
+    return recipe;
 }
 
-function updateJsonPreview() { document.getElementById('json-preview').textContent = generateRecipeJson(); }
+function generateRecipeJson(includeProjectData) {
+    return JSON.stringify(generateRecipeObject(includeProjectData), null, '\t');
+}
+
+function updateJsonPreview() { document.getElementById('json-preview').textContent = generateRecipeJson(false); }
 
 // ========== 3D PREVIEW ==========
 function setup3DPreview() {
@@ -1345,19 +1606,21 @@ function isPywebview() { return typeof pywebview!=='undefined' && pywebview.api;
 
 // ========== FILE I/O ==========
 async function saveProject() {
-    const data = {
-        version:1, name:document.getElementById('recipe-name').value,
-        output:document.getElementById('recipe-output').value,
-        quantity:parseInt(document.getElementById('recipe-quantity').value)||1,
-        recipeMode:recipeMode, gridW:GRID_W, gridH:GRID_H, layers:layers
-    };
-    const content = JSON.stringify(data,null,'\t');
-    const fn = (data.name||'project')+'.json';
+    const content = generateRecipeJson(true);
+    if (isPywebview() && currentFilePath) {
+        const r = await pywebview.api.save_file(currentFilePath, content);
+        if (r===true) { markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
+    } else { await saveProjectAs(); }
+}
+
+async function saveProjectAs() {
+    const content = generateRecipeJson(true);
+    const fn = (document.getElementById('recipe-name').value||'project')+'.json';
     if (isPywebview()) {
         const path = await pywebview.api.save_file_dialog(fn,'json');
         if (!path) return;
         const r = await pywebview.api.save_file(path,content);
-        if (r===true) { markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
+        if (r===true) { currentFilePath = path; markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
     } else { downloadBlob(new Blob([content]),fn); markClean(); showToast(t('toastSaved')); }
 }
 
@@ -1366,6 +1629,7 @@ async function loadProject() {
         const r = await pywebview.api.open_file_dialog();
         if (!r) return;
         if (r.error) { showToast('Error: '+r.error,true); return; }
+        currentFilePath = r.path || null;
         parseAndLoad(r.content);
     } else { document.getElementById('file-input-load').click(); }
 }
@@ -1379,28 +1643,77 @@ function loadProjectFromFile(f) {
 function parseAndLoad(text) {
     try {
         const d = JSON.parse(text);
-        if (d.version && d.layers) loadAnvilProject(d);
-        else if (d.pattern) loadSmithingRecipe(d);
-        else showToast(t('toastBadFile'),true);
+        if (d._anvilCreator) {
+            // New format v2: game recipe + embedded compact project data
+            const ac = d._anvilCreator;
+            loadAnvilProjectV2(ac);
+            if (d.name) document.getElementById('recipe-name').value = d.name;
+            if (d.output?.code) document.getElementById('recipe-output').value = d.output.code;
+            if (d.output?.quantity) document.getElementById('recipe-quantity').value = d.output.quantity;
+            if (ac.recipeMode) setRecipeMode(ac.recipeMode);
+            refreshGrid(); updateAll(); markClean(); showToast(t('toastLoaded'));
+        } else if (d.version && d.layers) {
+            // Legacy project format (v1 with boolean arrays)
+            loadAnvilProject(d);
+        } else if (d.pattern) {
+            // Vanilla VS recipe format
+            loadSmithingRecipe(d);
+        } else showToast(t('toastBadFile'),true);
     } catch(e) { showToast('Error: '+e.message,true); }
 }
 
 function loadAnvilProject(d) {
     saveUndo();
     for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) layers[l][r].fill(false);
-    const nl = Math.min(d.layers.length,LAYERS);
+    const srcLayers = d.layers || [];
+    const nl = Math.min(srcLayers.length, LAYERS);
     for (let l=0;l<nl;l++) {
-        const nr=Math.min(d.layers[l].length,GRID_H);
+        if (!Array.isArray(srcLayers[l])) continue;
+        const nr = Math.min(srcLayers[l].length, GRID_H);
         for (let r=0;r<nr;r++) {
-            const nc=Math.min(d.layers[l][r].length,GRID_W);
-            for (let c=0;c<nc;c++) layers[l][r][c]=!!d.layers[l][r][c];
+            if (!Array.isArray(srcLayers[l][r])) continue;
+            const nc = Math.min(srcLayers[l][r].length, GRID_W);
+            for (let c=0;c<nc;c++) layers[l][r][c] = !!srcLayers[l][r][c];
         }
     }
-    if (d.name) document.getElementById('recipe-name').value=d.name;
-    if (d.output) document.getElementById('recipe-output').value=d.output;
-    if (d.quantity) document.getElementById('recipe-quantity').value=d.quantity;
+    // Legacy v1 format stores these at top level
+    if (d.name) document.getElementById('recipe-name').value = d.name;
+    if (typeof d.output === 'string') document.getElementById('recipe-output').value = d.output;
+    if (d.quantity) document.getElementById('recipe-quantity').value = d.quantity;
     if (d.recipeMode) setRecipeMode(d.recipeMode);
     refreshGrid(); updateAll(); markClean(); showToast(t('toastLoaded'));
+}
+
+function loadAnvilProjectV2(ac) {
+    saveUndo();
+    for (let l=0;l<LAYERS;l++) for (let r=0;r<GRID_H;r++) layers[l][r].fill(false);
+
+    if (ac.layerData) {
+        // Compact format: {layerIndex: [row strings], ...}
+        for (const [li, rows] of Object.entries(ac.layerData)) {
+            const l = parseInt(li);
+            if (l < 0 || l >= LAYERS || !Array.isArray(rows)) continue;
+            for (let r=0; r<rows.length && r<GRID_H; r++) {
+                const rs = rows[r];
+                if (typeof rs !== 'string') continue;
+                for (let c=0; c<rs.length && c<GRID_W; c++) {
+                    layers[l][r][c] = (rs[c] === '#');
+                }
+            }
+        }
+    } else if (ac.layers) {
+        // Fallback: old _anvilCreator with boolean arrays
+        const nl = Math.min(ac.layers.length, LAYERS);
+        for (let l=0; l<nl; l++) {
+            if (!Array.isArray(ac.layers[l])) continue;
+            const nr = Math.min(ac.layers[l].length, GRID_H);
+            for (let r=0; r<nr; r++) {
+                if (!Array.isArray(ac.layers[l][r])) continue;
+                const nc = Math.min(ac.layers[l][r].length, GRID_W);
+                for (let c=0; c<nc; c++) layers[l][r][c] = !!ac.layers[l][r][c];
+            }
+        }
+    }
 }
 
 function loadSmithingRecipe(d) {
@@ -1425,7 +1738,7 @@ function loadSmithingRecipe(d) {
 }
 
 async function exportRecipe() {
-    const json = generateRecipeJson();
+    const json = generateRecipeJson(false);
     const fn = (document.getElementById('recipe-name').value||'recipe')+'.json';
     if (isPywebview()) {
         const path = await pywebview.api.save_file_dialog(fn,'json');
@@ -1458,7 +1771,8 @@ function setupKeyboard() {
     document.addEventListener('keydown', e=>{
         if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT') return;
         if (e.ctrlKey||e.metaKey) {
-            if (e.key==='s'||e.key==='ы') { e.preventDefault(); saveProject(); }
+            if ((e.key==='s'||e.key==='S'||e.key==='ы'||e.key==='Ы') && e.shiftKey) { e.preventDefault(); saveProjectAs(); }
+            else if (e.key==='s'||e.key==='ы') { e.preventDefault(); saveProject(); }
             else if (e.key==='o'||e.key==='щ') { e.preventDefault(); loadProject(); }
             else if (e.key==='e'||e.key==='у') { e.preventDefault(); exportRecipe(); }
             else if (e.key==='z'||e.key==='я') { e.preventDefault(); undo(); }
@@ -1473,6 +1787,10 @@ function setupKeyboard() {
         if (e.key==='s'||e.key==='ы') { if(currentLayer>0) switchLayer(currentLayer-1); }
         if (e.key==='R'||e.key==='К') { e.preventDefault(); rotateAll(); }
         else if (e.key==='r'||e.key==='к') { rotateLayer(); }
+        if (e.key==='ArrowLeft') { e.preventDefault(); moveModelAll(-1, 0); }
+        if (e.key==='ArrowRight') { e.preventDefault(); moveModelAll(1, 0); }
+        if (e.key==='ArrowUp') { e.preventDefault(); moveModelAll(0, -1); }
+        if (e.key==='ArrowDown') { e.preventDefault(); moveModelAll(0, 1); }
     });
 
     // Mouse wheel — scroll layers (on grid area)

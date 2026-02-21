@@ -9,17 +9,26 @@ Version: 1.0
 import webview
 import os
 import sys
+import ctypes
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
 
-def get_html_path():
-    """Get path to the HTML file, works both in dev and bundled mode."""
+def get_base_dir():
+    """Get base directory, works both in dev and bundled mode."""
     if getattr(sys, 'frozen', False):
-        base_dir = sys._MEIPASS
-    else:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_dir, 'anvil-creator.html')
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+def get_html_path():
+    """Get path to the HTML file."""
+    return os.path.join(get_base_dir(), 'anvil-creator.html')
+
+
+def get_icon_path():
+    """Get path to the icon file."""
+    return os.path.join(get_base_dir(), 'anvil-creator.ico')
 
 
 # Unsaved state tracked in Python to avoid evaluate_js deadlock on close
@@ -108,11 +117,51 @@ def on_closing():
     return result  # True = close, False = cancel
 
 
+def set_window_icon(icon_path):
+    """Установить иконку окна через Windows API (обход ограничения pywebview)."""
+    if sys.platform != 'win32' or not os.path.exists(icon_path):
+        return
+    try:
+        user32 = ctypes.windll.user32
+        # Загрузить .ico файл
+        IMAGE_ICON = 1
+        LR_LOADFROMFILE = 0x0010
+        LR_DEFAULTSIZE = 0x0040
+        icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
+
+        # Большая иконка (32x32) и маленькая (16x16)
+        hicon_big = user32.LoadImageW(0, icon_path, IMAGE_ICON, 32, 32, icon_flags)
+        hicon_small = user32.LoadImageW(0, icon_path, IMAGE_ICON, 16, 16, icon_flags)
+
+        # Найти окно по заголовку
+        hwnd = user32.FindWindowW(None, 'Anvil Creator — VS Smithing Recipe Editor')
+        if hwnd:
+            WM_SETICON = 0x0080
+            ICON_BIG = 1
+            ICON_SMALL = 0
+            if hicon_big:
+                user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_big)
+            if hicon_small:
+                user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
+    except Exception:
+        pass  # Не критично, просто будет дефолтная иконка
+
+
+def on_shown(window):
+    """Вызывается когда окно pywebview отображено."""
+    icon_path = get_icon_path()
+    set_window_icon(icon_path)
+
+
 def main():
     html_path = get_html_path()
     if not os.path.exists(html_path):
         print(f"Error: HTML file not found at {html_path}")
         sys.exit(1)
+
+    # Задать AppUserModelID до создания окна
+    if sys.platform == 'win32':
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('AnvilCreator.VS.1')
 
     window = webview.create_window(
         title='Anvil Creator — VS Smithing Recipe Editor',
@@ -126,6 +175,7 @@ def main():
     )
 
     window.events.closing += on_closing
+    window.events.shown += lambda: on_shown(window)
 
     api = Api(window)
     window.expose(
