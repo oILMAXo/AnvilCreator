@@ -5,7 +5,7 @@ a = Analysis(
     ['anvil_creator_app.py'],
     pathex=[],
     binaries=[],
-    datas=[('anvil-creator.html', '.')],
+    datas=[('anvil-creator.html', '.'), ('anvil-creator.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

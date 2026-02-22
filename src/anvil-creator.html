@@ -529,10 +529,6 @@ body {
 
 <!-- Toolbar -->
 <div class="toolbar">
-    <button class="tb-btn" onclick="saveProject()" data-i18n="save" data-tooltip-key="tipSave">💾 Сохранить</button>
-    <button class="tb-btn" onclick="loadProject()" data-i18n="load" data-tooltip-key="tipLoad">📂 Импорт</button>
-    <button class="tb-btn" onclick="exportRecipe()" data-i18n="export" data-tooltip-key="tipExport">📤 Экспорт</button>
-    <div class="toolbar-sep"></div>
     <button class="tb-btn" onclick="undo()" data-i18n="undo" data-tooltip-key="tipUndo">↩</button>
     <button class="tb-btn" onclick="redo()" data-i18n="redo" data-tooltip-key="tipRedo">↪</button>
     <div class="toolbar-sep"></div>
@@ -542,7 +538,7 @@ body {
     </div>
     <div class="recipe-field" data-tooltip-key="tipOutput">
         <label data-i18n="lbl_output">Выход</label>
-        <input type="text" id="recipe-output" value="game:metalpart-{metal}">
+        <input type="text" id="recipe-output" value="" placeholder="Empty">
     </div>
     <div class="recipe-field" data-tooltip-key="tipQty">
         <label data-i18n="lbl_qty">Количество</label>
@@ -1321,7 +1317,7 @@ function updateStats() {
 // ========== JSON ==========
 function generateRecipeObject(includeProjectData) {
     const name = document.getElementById('recipe-name').value || 'myitem';
-    const output = document.getElementById('recipe-output').value || 'metalpart-{metal}';
+    const output = document.getElementById('recipe-output').value || '';
     const qty = parseInt(document.getElementById('recipe-quantity').value) || 1;
 
     let usedLayers=[], minR=GRID_H, maxR=-1, minC=GRID_W, maxC=-1;
@@ -1609,7 +1605,7 @@ async function saveProject() {
     const content = generateRecipeJson(false);
     if (isPywebview() && currentFilePath) {
         const r = await pywebview.api.save_file(currentFilePath, content);
-        if (r===true) { markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
+        if (r && typeof r !== 'string') { markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
     } else { await saveProjectAs(); }
 }
 
@@ -1620,7 +1616,7 @@ async function saveProjectAs() {
         const path = await pywebview.api.save_file_dialog(fn,'json');
         if (!path) return;
         const r = await pywebview.api.save_file(path,content);
-        if (r===true) { currentFilePath = path; markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
+        if (r && typeof r !== 'string') { currentFilePath = path; markClean(); showToast(t('toastSaved')); } else showToast('Error: '+r,true);
     } else { downloadBlob(new Blob([content]),fn); markClean(); showToast(t('toastSaved')); }
 }
 
@@ -1630,11 +1626,23 @@ async function loadProject() {
         if (!r) return;
         if (r.error) { showToast('Error: '+r.error,true); return; }
         currentFilePath = r.path || null;
+        // Установить имя файла (без расширения) в поле "Имя"
+        if (currentFilePath) {
+            const fn = currentFilePath.replace(/\\/g,'/').split('/').pop().replace(/\.[^.]+$/,'');
+            if (fn) document.getElementById('recipe-name').value = fn;
+        }
         parseAndLoad(r.content);
     } else { document.getElementById('file-input-load').click(); }
 }
 
 function loadProjectFromFile(f) {
+    // Установить имя файла (без расширения) в поле "Имя"
+    if (f.name) {
+        const fn = f.name.replace(/\.[^.]+$/, '');
+        if (fn) document.getElementById('recipe-name').value = fn;
+    }
+    // Drag-and-drop: браузер не даёт полный путь к файлу (безопасность),
+    // поэтому currentFilePath остаётся null — первое сохранение покажет диалог
     const rd = new FileReader();
     rd.onload = e => parseAndLoad(e.target.result);
     rd.readAsText(f);
@@ -1735,10 +1743,10 @@ function loadSmithingRecipe(d) {
                     patW=d.pattern[l][r].length;
             }
         }
-        // Центрировать в сетке 16×16
+        // Центрировать по строкам/столбцам, слои начинаются с 0 (низ)
         const offR = Math.floor((GRID_H - patH) / 2);
         const offC = Math.floor((GRID_W - patW) / 2);
-        const offL = Math.floor((LAYERS - d.pattern.length) / 2);
+        const offL = 0;
         for (let l=0;l<d.pattern.length&&(l+offL)<LAYERS;l++) {
             if (!Array.isArray(d.pattern[l])) continue;
             const tl = l + offL;
