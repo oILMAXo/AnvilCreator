@@ -1,0 +1,62 @@
+name: Build Linux
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.2.3)'
+        required: true
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgirepository1.0-dev \
+            gir1.2-webkit2-4.1 \
+            libwebkit2gtk-4.1-dev \
+            pkg-config \
+            python3-gi \
+            python3-gi-cairo \
+            gobject-introspection
+
+      - name: Install Python dependencies
+        run: |
+          pip install pywebview[gtk] pyinstaller
+
+      - name: Build with PyInstaller
+        working-directory: src
+        run: |
+          pyinstaller \
+            --onefile \
+            --windowed \
+            --name AnvilCreator \
+            --add-data "anvil-creator.html:." \
+            --hidden-import gi \
+            --hidden-import gi.repository.Gtk \
+            --hidden-import gi.repository.WebKit2 \
+            anvil_creator_app.py
+
+      - name: Create archive
+        run: |
+          cd src/dist
+          chmod +x AnvilCreator
+          tar czf AnvilCreator-${{ github.event.inputs.version }}-linux-x64.tar.gz AnvilCreator
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.event.inputs.version }} \
+            src/dist/AnvilCreator-${{ github.event.inputs.version }}-linux-x64.tar.gz \
+            --clobber
